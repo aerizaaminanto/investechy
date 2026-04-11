@@ -1,201 +1,225 @@
-import { findAllProjects } from "../repositories/project.repository.js";
-import { findAllSimulations } from "../repositories/simulation.repository.js";
-import { User } from "../models/index.js";
+import { Project, User } from "../models/index.js";
 
-// =========================
-// 🧠 GENERATE INSIGHT NOTE
-// =========================
-export const updateInsightNote = (projects, simulations) => {
-  if (simulations.length === 0) {
-    return "Start your first simulation to get investment insights.";
-  }
-
-  // Find best ROI simulation
-  const bestSim = simulations.reduce((best, curr) =>
-    (curr.roi || 0) > (best.roi || 0) ? curr : best
-  );
-
-  // Find related project
-  const bestProject = projects.find(
-    (p) => p._id?.toString() === bestSim.projectId?.toString()
-  );
-
-  const projectName = bestProject?.projectName || "your best project";
-  const roi = bestSim.roi || 0;
-  const ieScore = bestSim.ieScore || 0;
-
-  if (roi > 150 && ieScore > 70) {
-    return `📈 Excellent! "${projectName}" shows exceptional performance with ${roi}% ROI and ${ieScore} IE Score. This is your top investment opportunity.`;
-  } else if (roi > 100 && ieScore > 50) {
-    return `✅ Good prospect! "${projectName}" demonstrates solid returns with ${roi}% ROI and ${ieScore} IE Score. Consider prioritizing this project.`;
-  } else if (roi > 50) {
-    return `⚡ Promising! "${projectName}" has potential with ${roi}% ROI. Analyze more scenarios to optimize returns.`;
-  } else {
-    return `💡 Review needed. "${projectName}" currently shows ${roi}% ROI. Consider adjusting parameters or exploring alternative strategies.`;
-  }
+const EMPTY_DASHBOARD = {
+  overviewCards: {
+    totalInvestmentCapex: 0,
+    totalProject: 0,
+    waitingInputDataProject: 0,
+    calculatedProjectValue: 0,
+  },
+  statistics: {
+    ieScoreProjection: [],
+    ieScoreAndRoiComparison: {
+      selectedProject: "-",
+      data: [],
+    },
+  },
+  insightNote: "Belum ada data proyek. Silakan buat proyek baru untuk melihat statistik.",
+  topProjects: [],
 };
 
-// =========================
-// 🔄 UPDATE INSIGHT NOTE
-// =========================
-export const updateInsightNoteByUserId = async (userId, customInsightNote = null) => {
+const getLatestSimulation = (simulationHistory = []) => {
+  if (!Array.isArray(simulationHistory) || simulationHistory.length === 0) {
+    return null;
+  }
+
+  return [...simulationHistory].sort((a, b) => {
+    const dateA = new Date(a?.calculatedAt || 0).getTime();
+    const dateB = new Date(b?.calculatedAt || 0).getTime();
+    return dateB - dateA;
+  })[0];
+};
+
+const sumNominalItems = (items = []) =>
+  Array.isArray(items)
+    ? items.reduce((sum, item) => sum + Number(item?.nominal || 0), 0)
+    : 0;
+
+const getCalculatedProjects = (projects = []) =>
+  projects.filter(
+    (project) =>
+      project?.status === "CALCULATED" &&
+      Array.isArray(project?.simulationHistory) &&
+      project.simulationHistory.length > 0
+  );
+
+const buildProjectRanking = (projects = []) =>
+  getCalculatedProjects(projects)
+    .map((project) => {
+      const latestSimulation = getLatestSimulation(project.simulationHistory);
+      if (!latestSimulation) {
+        return null;
+      }
+
+      return {
+        projectId: project._id?.toString(),
+        projectName: project.projectName || "Unnamed Project",
+        simulationName: latestSimulation.scenarioName || "Latest Simulation",
+        investment: sumNominalItems(latestSimulation.simulatedData?.capex),
+        roiPercentage: Number(latestSimulation.financialResults?.roi || 0),
+        ieScore: Number(latestSimulation.financialResults?.ieScore || 0),
+        status: latestSimulation.financialResults?.feasibilityStatus || "Unknown",
+        updatedAt: new Date(project.updatedAt || project.createdAt || 0).getTime(),
+        simulationHistory: project.simulationHistory || [],
+      };
+    })
+    .filter(Boolean);
+
+export const updateInsightNote = (projects = []) => {
+  const rankedProjects = buildProjectRanking(projects).sort(
+    (a, b) =>
+      b.roiPercentage - a.roiPercentage ||
+      b.ieScore - a.ieScore ||
+      b.updatedAt - a.updatedAt
+  );
+
+  if (rankedProjects.length === 0) {
+    return "Belum ada data kalkulasi yang tersedia untuk memberikan wawasan.";
+  }
+
+  const bestProject = rankedProjects[0];
+  const roi = Number(bestProject.roiPercentage || 0).toFixed(2);
+  const ieScore = Number(bestProject.ieScore || 0).toFixed(2);
+
+  if (bestProject.roiPercentage >= 150 && bestProject.ieScore >= 70) {
+    return `Project "${bestProject.projectName}" menunjukkan performa sangat kuat dengan ROI ${roi}% dan IE Score ${ieScore}. Ini layak diprioritaskan sebagai investasi utama.`;
+  }
+
+  if (bestProject.roiPercentage >= 100 && bestProject.ieScore >= 50) {
+    return `Project "${bestProject.projectName}" memiliki prospek baik dengan ROI ${roi}% dan IE Score ${ieScore}. Pertimbangkan untuk memprioritaskan proyek ini.`;
+  }
+
+  if (bestProject.roiPercentage > 0) {
+    return `Project "${bestProject.projectName}" saat ini mencatat ROI ${roi}% dengan IE Score ${ieScore}. Masih ada potensi optimasi melalui simulasi lanjutan.`;
+  }
+
+  return `Project "${bestProject.projectName}" masih memerlukan evaluasi lanjutan karena ROI saat ini ${roi}%. Tinjau kembali asumsi biaya dan manfaatnya.`;
+};
+
+export const updateInsightNoteByUserId = async (
+  userId,
+  customInsightNote = null
+) => {
   try {
-    console.log("🔄 updateInsightNoteByUserId called with:");
-    console.log("👤 userId:", userId);
-    console.log("📝 customInsightNote:", customInsightNote);
-    console.log("📝 Type:", typeof customInsightNote);
+    const normalizedCustomNote =
+      typeof customInsightNote === "string" ? customInsightNote.trim() : "";
 
-    // If custom insight note provided and not empty string, save it to user
-    if (customInsightNote !== null && customInsightNote !== undefined && customInsightNote.trim() !== "") {
-      console.log("💾 Saving custom insight note to database");
-      await User.findByIdAndUpdate(userId, { customInsightNote: customInsightNote.trim() });
-    } else {
-      console.log("🗑️ Removing custom insight note (will use auto-generated)");
-      // If null/undefined/empty, remove custom insight note (will use auto-generated)
-      await User.findByIdAndUpdate(userId, { customInsightNote: null });
-    }
+    await User.findByIdAndUpdate(userId, {
+      customInsightNote: normalizedCustomNote || null,
+    });
 
-    // Get user's projects and simulations
-    const projects = (await findAllProjects(userId)) || [];
-    const simulations = (await findAllSimulations(userId)) || [];
+    const projects = await Project.find({ userId }).sort({
+      updatedAt: -1,
+      createdAt: -1,
+    });
 
-    // Use custom insight note if provided, otherwise generate auto insight
-    const finalInsightNote = (customInsightNote !== null && customInsightNote !== undefined && customInsightNote.trim() !== "")
-      ? customInsightNote.trim()
-      : updateInsightNote(projects, simulations);
-
-    const isCustom = (customInsightNote !== null && customInsightNote !== undefined && customInsightNote.trim() !== "");
-
-    console.log("✅ Final result:");
-    console.log("📝 finalInsightNote:", finalInsightNote);
-    console.log("🔍 isCustom:", isCustom);
+    const simulationCount = projects.reduce(
+      (total, project) =>
+        total +
+        (Array.isArray(project?.simulationHistory)
+          ? project.simulationHistory.length
+          : 0),
+      0
+    );
 
     return {
       success: true,
-      insightNote: finalInsightNote,
+      insightNote: normalizedCustomNote || updateInsightNote(projects),
       projectCount: projects.length,
-      simulationCount: simulations.length,
-      isCustom,
+      simulationCount,
+      isCustom: Boolean(normalizedCustomNote),
     };
   } catch (error) {
-    console.error("❌ UPDATE INSIGHT NOTE ERROR:", error.message);
+    console.error("Dashboard insight update error:", error.message);
     throw error;
   }
 };
 
 export const getDashboardData = async (userId) => {
   try {
-    // =========================
-    // 📥 GET DATA FROM DB
-    // =========================
-    const projects = (await findAllProjects(userId)) || [];
-    const simulations = (await findAllSimulations(userId)) || [];
+    const [projects, user] = await Promise.all([
+      Project.find({ userId }).sort({ updatedAt: -1, createdAt: -1 }),
+      User.findById(userId).select("customInsightNote"),
+    ]);
 
-    // =========================
-    // 👤 GET USER CUSTOM INSIGHT
-    // =========================
-    const user = await User.findById(userId);
-    const customInsightNote = user?.customInsightNote;
-
-    // =========================
-    // 📊 OVERVIEW CARDS
-    // =========================
-    const totalInvestmentCapex = projects.reduce(
-      (sum, proj) => sum + (proj.investment || 0),
-      0
-    );
-
-    const totalProject = projects.length;
-
-    const waitingInputDataProject = projects.filter(
-      (proj) => !proj.isCalculated
-    ).length;
-
-    const calculatedProjectValue = projects.filter(
-      (proj) => proj.isCalculated
-    ).length;
-
-    // =========================
-    // 📈 IE SCORE PROJECTION
-    // =========================
-    const ieScoreProjection = projects.slice(0, 5).map((proj) => {
-      const projSim = simulations.find(
-        (sim) => sim.projectId?.toString() === proj._id?.toString()
-      );
+    if (!projects || projects.length === 0) {
       return {
-        projectName: proj.projectName || "Unnamed Project",
-        score: projSim?.ieScore || proj.ieScore || 0,
+        ...EMPTY_DASHBOARD,
+        insightNote: user?.customInsightNote?.trim() || EMPTY_DASHBOARD.insightNote,
       };
-    });
+    }
 
-    // =========================
-    // 📊 ROI vs IE SCORE
-    // =========================
-    const selectedProject = projects[0];
+    const calculatedProjects = getCalculatedProjects(projects);
+    const rankedProjects = buildProjectRanking(projects);
 
-    const comparisonData = simulations
-      .filter((sim) => sim.projectId?.toString() === selectedProject?._id?.toString())
-      .map((sim) => ({
-        simulationName: sim.name || "Unnamed Simulation",
-        roiScore: sim.roi || 0,
-        ieScore: sim.ieScore || 0,
+    const overviewCards = {
+      totalInvestmentCapex: rankedProjects.reduce(
+        (sum, project) => sum + Number(project.investment || 0),
+        0
+      ),
+      totalProject: projects.length,
+      waitingInputDataProject: projects.filter(
+        (project) => project?.status === "WAITING_USER_INPUT"
+      ).length,
+      calculatedProjectValue: calculatedProjects.length,
+    };
+
+    const ieScoreProjection = rankedProjects
+      .map((project) => ({
+        projectName: project.projectName,
+        score: Number(project.ieScore || 0),
+      }))
+      .filter((item) => item.score > 0)
+      .slice(0, 5);
+
+    const selectedProject = [...rankedProjects].sort(
+      (a, b) => b.updatedAt - a.updatedAt
+    )[0];
+
+    const ieScoreAndRoiComparison = selectedProject
+      ? {
+          selectedProject: selectedProject.projectName,
+          data: selectedProject.simulationHistory.map((simulation, index) => ({
+            simulationName:
+              simulation.scenarioName || `Simulasi ${index + 1}`,
+            roiScore: Number(simulation.financialResults?.roi || 0),
+            ieScore: Number(simulation.financialResults?.ieScore || 0),
+          })),
+        }
+      : {
+          selectedProject: "-",
+          data: [],
+        };
+
+    const topProjects = [...rankedProjects]
+      .sort(
+        (a, b) =>
+          b.roiPercentage - a.roiPercentage ||
+          b.ieScore - a.ieScore ||
+          b.updatedAt - a.updatedAt
+      )
+      .slice(0, 3)
+      .map((project) => ({
+        projectName: project.projectName,
+        simulationName: project.simulationName,
+        investment: project.investment,
+        roiPercentage: project.roiPercentage,
+        ieScore: project.ieScore,
+        status: project.status,
       }));
 
-    // =========================
-    // 🧠 INSIGHT NOTE (CUSTOM OR AUTO-GENERATED)
-    // =========================
-    const insightNote = customInsightNote || updateInsightNote(projects, simulations);
-
-    // =========================
-    // 🏆 TOP PROJECTS
-    // =========================
-    const topProjects = simulations
-      .sort((a, b) => (b.roi || 0) - (a.roi || 0))
-      .slice(0, 3)
-      .map((sim) => {
-        const project = projects.find(
-          (p) => p._id?.toString() === sim.projectId?.toString()
-        );
-
-        const roi = sim.roi || 0;
-
-        return {
-          projectName: project?.projectName || "Unknown Project",
-          simulationName: sim.name || "Unnamed Simulation",
-          investment: project?.investment || 0,
-          roiPercentage: roi,
-          ieScore: sim.ieScore || 0,
-          status:
-            roi > 150
-              ? "Highly Feasible"
-              : roi > 100
-              ? "Feasible"
-              : "Less Feasible",
-        };
-      });
-
-    // =========================
-    // 🚀 FINAL RESPONSE
-    // =========================
     return {
-      overviewCards: {
-        totalInvestmentCapex,
-        totalProject,
-        waitingInputDataProject,
-        calculatedProjectValue,
-      },
+      overviewCards,
       statistics: {
         ieScoreProjection,
-        ieScoreAndRoiComparison: {
-          selectedProject: selectedProject?.projectName || null,
-          data: comparisonData,
-        },
+        ieScoreAndRoiComparison,
       },
-      insightNote,
+      insightNote:
+        user?.customInsightNote?.trim() || updateInsightNote(projects),
       topProjects,
     };
   } catch (error) {
-    console.error("❌ DASHBOARD ERROR:", error.message);
+    console.error("Dashboard data error:", error.message);
     throw error;
   }
 };

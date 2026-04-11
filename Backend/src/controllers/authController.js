@@ -1,6 +1,6 @@
 import { User } from "../models/index.js";
 import { compare } from "../helpers/password.js";
-import { generateToken } from "../helpers/token.js";
+import { generatePasswordResetToken, generateToken } from "../helpers/token.js";
 import transporter from "../helpers/mailer.js";
 import { s3Client } from "../services/b2Connect.js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
@@ -15,7 +15,7 @@ const getStorageBucket = () =>
 // =======================
 export const register = async (req, res, next) => {
   try {
-    const { name, nama, email, password, confirmPassword, businessName, role } = req.body;
+    const { name, nama, email, password, confirmPassword, businessName } = req.body;
     
     // Support both name and nama for backward compatibility
     const finalName = name || nama;
@@ -38,7 +38,7 @@ export const register = async (req, res, next) => {
       email,
       password,
       businessName,
-      role: role || "user",
+      role: "user",
     });
 
     const token = generateToken({
@@ -227,7 +227,11 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "OTP has expired" });
     }
 
-    const resetToken = generateToken({ id: user._id, email: user.email, name: user.name });
+    const resetToken = generatePasswordResetToken({
+      id: user._id,
+      email: user.email,
+      name: user.name,
+    });
 
     user.resetOtp = undefined;
     user.resetOtpExpiry = undefined;
@@ -251,7 +255,7 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ success: false, message: "Passwords do not match" });
     }
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
@@ -284,7 +288,7 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     // avatar dihapus dari req.body karena file gambar akan ada di req.file
-    const { firstName, lastName, businessName, role } = req.body;
+    const { firstName, lastName, businessName } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -318,8 +322,6 @@ export const updateProfile = async (req, res) => {
     if (firstName !== undefined) user.firstName = firstName;
     if (lastName !== undefined) user.lastName = lastName;
     if (businessName !== undefined) user.businessName = businessName;
-    if (role !== undefined) user.role = role;
-
     // 3. Update nama lengkap jika firstName atau lastName berubah
     if (firstName || lastName) {
       user.name = `${firstName ?? user.firstName ?? ""} ${lastName ?? user.lastName ?? ""}`.trim();

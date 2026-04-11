@@ -9,6 +9,7 @@ import api from "../services/api";
 import invesTechyLogo from "../assets/InvesTechy.jpg";
 import { usePopup } from "../components/PopupProvider";
 import "./editData.css";
+import "./percentRate.css";
 
 const SECTION_NAMES = ["CAPEX", "OPEX", "Tangible Results", "Intangible Results"];
 
@@ -130,6 +131,53 @@ const buildSectionsFromDraft = (draft) => {
   ];
 };
 
+const buildSimulationForm = (draft) => {
+  const latestSimulation = draft?.latestSimulation || getLatestSimulation(draft?.simulationHistory);
+  const latestSimulationSettings = latestSimulation?.simulationSettings || {};
+
+  return {
+    scenarioName:
+      latestSimulation?.scenarioName ||
+      draft?.scenarioName ||
+      "Optimistic Scenario",
+    inflationRate: String(
+      toNumberValue(
+        (draft?.inflationRate ??
+          draft?.simulationSettings?.inflationRate ??
+          latestSimulationSettings?.inflationRate ??
+          0.05) * 100,
+      ),
+    ),
+    taxRate: String(
+      toNumberValue(
+        (draft?.taxRate ??
+          draft?.simulationSettings?.taxRate ??
+          latestSimulationSettings?.taxRate ??
+          0.11) * 100,
+      ),
+    ),
+    discountRate: String(
+      toNumberValue(
+        (draft?.discountRate ??
+          draft?.simulationSettings?.discountRate ??
+          latestSimulationSettings?.discountRate ??
+          0.1) * 100,
+      ),
+    ),
+    years: String(
+      toNumberValue(
+        draft?.years ??
+          draft?.yearsExpected ??
+          draft?.simulationSettings?.years ??
+          draft?.simulationSettings?.yearsExpected ??
+          latestSimulationSettings?.years ??
+          latestSimulationSettings?.yearsExpected ??
+          3,
+      ),
+    ),
+  };
+};
+
 const formatCurrency = (value) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -160,6 +208,18 @@ const formatShortNumber = (value) => {
   return new Intl.NumberFormat("id-ID", {
     maximumFractionDigits: 2,
   }).format(amount);
+};
+
+const sanitizeDecimalInput = (value) => {
+  const normalizedValue = String(value || "").replace(/,/g, ".");
+  const sanitizedValue = normalizedValue.replace(/[^\d.]/g, "");
+  const [wholePart = "", ...decimalParts] = sanitizedValue.split(".");
+
+  if (decimalParts.length === 0) {
+    return wholePart;
+  }
+
+  return `${wholePart}.${decimalParts.join("")}`;
 };
 
 const getNumericValue = (value) => {
@@ -312,6 +372,7 @@ export default function EditData() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
   const [sections, setSections] = useState(createInitialSections);
+  const [simulationForm, setSimulationForm] = useState(() => buildSimulationForm());
   const [chatMessages, setChatMessages] = useState([]);
   const [chatHistoryEntries, setChatHistoryEntries] = useState(() => readAiHelpyHistory());
   const [chatInput, setChatInput] = useState("");
@@ -340,6 +401,7 @@ export default function EditData() {
   useEffect(() => {
     if (!currentDraft) return;
     setSections(buildSectionsFromDraft(currentDraft));
+    setSimulationForm(buildSimulationForm(currentDraft));
   }, [currentDraft]);
 
   const loadChatHistory = useCallback(async () => {
@@ -471,6 +533,18 @@ export default function EditData() {
     );
   };
 
+  const handleSimulationFieldChange = (field, value) => {
+    setSimulationForm((prev) => ({
+      ...prev,
+      [field]:
+        field === "scenarioName"
+          ? value
+          : field === "years"
+            ? value.replace(/[^\d]/g, "")
+            : sanitizeDecimalInput(value),
+    }));
+  };
+
   const handleDeleteRow = (sectionId, rowId) => {
     setSections((prev) =>
       prev.map((section) => {
@@ -516,7 +590,20 @@ export default function EditData() {
     [sections],
   );
   const financialResults = latestSimulation?.financialResults || {};
-  const simulationSettings = latestSimulation?.simulationSettings || {};
+  const previewScenarioName =
+    simulationForm.scenarioName?.trim() ||
+    latestSimulation?.scenarioName ||
+    currentDraft?.scenarioName ||
+    "Current Scenario";
+  const previewSimulationSettings = useMemo(
+    () => ({
+      inflationRate: toNumberValue(simulationForm.inflationRate || 5) / 100,
+      taxRate: toNumberValue(simulationForm.taxRate || 11) / 100,
+      discountRate: toNumberValue(simulationForm.discountRate || 10) / 100,
+      years: toNumberValue(simulationForm.years || 3),
+    }),
+    [simulationForm.discountRate, simulationForm.inflationRate, simulationForm.taxRate, simulationForm.years],
+  );
   const breakEvenRows = normalizeBreakEvenRows(financialResults?.breakEvenAnalysisDetail);
   const exportFeasibility =
     financialResults?.feasibilityStatus ||
@@ -553,6 +640,7 @@ export default function EditData() {
 
     return {
       scenarioName:
+        simulationForm.scenarioName.trim() ||
         latestSimulation?.scenarioName ||
         currentDraft?.scenarioName ||
         "Optimistic Scenario",
@@ -560,29 +648,43 @@ export default function EditData() {
       opex: mapRows("OPEX"),
       tangibleBenefits: mapRows("Tangible Results"),
       intangibleBenefits: mapRows("Intangible Results"),
-      inflationRate: toNumberValue(
-        currentDraft?.inflationRate ??
-          currentDraft?.simulationSettings?.inflationRate ??
-          latestSimulationSettings?.inflationRate ??
-          0.05,
-      ),
-      taxRate: toNumberValue(
-        currentDraft?.taxRate ??
-          currentDraft?.simulationSettings?.taxRate ??
-          latestSimulationSettings?.taxRate ??
-          0.11,
-      ),
-      discountRate: toNumberValue(
-        currentDraft?.discountRate ??
-          currentDraft?.simulationSettings?.discountRate ??
-          latestSimulationSettings?.discountRate ??
-          0.1,
-      ),
+      inflationRate:
+        toNumberValue(
+          simulationForm.inflationRate !== ""
+            ? simulationForm.inflationRate
+            : (currentDraft?.inflationRate ??
+              currentDraft?.simulationSettings?.inflationRate ??
+              latestSimulationSettings?.inflationRate ??
+              0.05) * 100,
+        ) / 100,
+      taxRate:
+        toNumberValue(
+          simulationForm.taxRate !== ""
+            ? simulationForm.taxRate
+            : (currentDraft?.taxRate ??
+              currentDraft?.simulationSettings?.taxRate ??
+              latestSimulationSettings?.taxRate ??
+              0.11) * 100,
+        ) / 100,
+      discountRate:
+        toNumberValue(
+          simulationForm.discountRate !== ""
+            ? simulationForm.discountRate
+            : (currentDraft?.discountRate ??
+              currentDraft?.simulationSettings?.discountRate ??
+              latestSimulationSettings?.discountRate ??
+              0.1) * 100,
+        ) / 100,
       years: toNumberValue(
-        currentDraft?.years ??
-          currentDraft?.simulationSettings?.years ??
-          latestSimulationSettings?.years ??
-          3,
+        simulationForm.years !== ""
+          ? simulationForm.years
+          : (currentDraft?.years ??
+            currentDraft?.yearsExpected ??
+            currentDraft?.simulationSettings?.years ??
+            currentDraft?.simulationSettings?.yearsExpected ??
+            latestSimulationSettings?.years ??
+            latestSimulationSettings?.yearsExpected ??
+            3),
       ),
     };
   };
@@ -884,6 +986,25 @@ export default function EditData() {
           </div>
         )}
 
+        <div className="input-card meta-card">
+          <div className="card-header">
+            <div>
+              <h3>Scenario Name</h3>
+              <p className="card-subtitle">Gunakan nama skenario yang paling sesuai untuk simulasi ini.</p>
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label>Scenario Name</label>
+            <input
+              type="text"
+              placeholder="Contoh: Optimistic Scenario"
+              value={simulationForm.scenarioName}
+              onChange={(event) => handleSimulationFieldChange("scenarioName", event.target.value)}
+            />
+          </div>
+        </div>
+
         <div className="edit-grid">
           {sections.map((section) => (
             <div className="input-card" key={section.id}>
@@ -942,6 +1063,70 @@ export default function EditData() {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="input-card meta-card simulation-settings-card">
+          <div className="card-header">
+            <div>
+              <h3>Simulation Settings</h3>
+              <p className="card-subtitle">Masukkan nilai rate dalam format persen, misalnya 5 berarti 5%.</p>
+            </div>
+          </div>
+
+          <div className="meta-field-grid">
+            <div className="input-group meta-field">
+              <label>Inflation Rate</label>
+              <div className="percent-input-wrapper">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="5"
+                  value={simulationForm.inflationRate}
+                  onChange={(event) => handleSimulationFieldChange("inflationRate", event.target.value)}
+                />
+                <span className="percent-suffix">%</span>
+              </div>
+            </div>
+
+            <div className="input-group meta-field">
+              <label>Tax Rate</label>
+              <div className="percent-input-wrapper">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="11"
+                  value={simulationForm.taxRate}
+                  onChange={(event) => handleSimulationFieldChange("taxRate", event.target.value)}
+                />
+                <span className="percent-suffix">%</span>
+              </div>
+            </div>
+
+            <div className="input-group meta-field">
+              <label>Discount Rate</label>
+              <div className="percent-input-wrapper">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="10"
+                  value={simulationForm.discountRate}
+                  onChange={(event) => handleSimulationFieldChange("discountRate", event.target.value)}
+                />
+                <span className="percent-suffix">%</span>
+              </div>
+            </div>
+
+            <div className="input-group meta-field">
+              <label>Years Expected</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="3"
+                value={simulationForm.years}
+                onChange={(event) => handleSimulationFieldChange("years", event.target.value)}
+              />
+            </div>
+          </div>
         </div>
         </>
         )}
@@ -1229,7 +1414,7 @@ export default function EditData() {
                 <img src={invesTechyLogo} alt="InvesTechy" className="pdf-export-logo small" />
                 <div>
                   <h2>SIMULATION & FEASIBILITY</h2>
-                  <p>{latestSimulation?.scenarioName || "Current Scenario"}</p>
+                  <p>{previewScenarioName}</p>
                 </div>
               </div>
 
@@ -1250,10 +1435,10 @@ export default function EditData() {
                   <div className="pdf-card">
                     <h3>Simulation Settings</h3>
                     <div className="pdf-kv-list compact">
-                      <div><span>Inflation Rate</span><strong>{formatShortNumber((simulationSettings?.inflationRate || 0) * 100)}%</strong></div>
-                      <div><span>Tax Rate</span><strong>{formatShortNumber((simulationSettings?.taxRate || 0) * 100)}%</strong></div>
-                      <div><span>Discount Rate</span><strong>{formatShortNumber((simulationSettings?.discountRate || 0) * 100)}%</strong></div>
-                      <div><span>Projection Years</span><strong>{formatShortNumber(simulationSettings?.years || 3)}</strong></div>
+                      <div><span>Inflation Rate</span><strong>{formatShortNumber((previewSimulationSettings.inflationRate || 0) * 100)}%</strong></div>
+                      <div><span>Tax Rate</span><strong>{formatShortNumber((previewSimulationSettings.taxRate || 0) * 100)}%</strong></div>
+                      <div><span>Discount Rate</span><strong>{formatShortNumber((previewSimulationSettings.discountRate || 0) * 100)}%</strong></div>
+                      <div><span>Projection Years</span><strong>{formatShortNumber(previewSimulationSettings.years || 3)}</strong></div>
                     </div>
                   </div>
                 </div>

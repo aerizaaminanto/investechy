@@ -24,6 +24,8 @@
    - [Update / Run Simulation](#24-update--run-simulation)
    - [Delete Project](#25-delete-project)
    - [Get Project Reports](#26-get-project-reports)
+   - [Get Project Report Detail](#27-get-project-report-detail)
+   - [Upload Project Report PDF](#28-upload-project-report-pdf)
 3. [Project Chatbot](#3-project-chatbot)
    - [Get Chat History](#31-get-chat-history)
    - [Send Chat Message](#32-send-chat-message)
@@ -36,8 +38,12 @@
    - [Delete Consultant](#55-delete-consultant-admin-only)
 6. [Admin](#6-admin)
    - [Get Dashboard Stats](#61-get-dashboard-stats)
-7. [Error Responses](#7-error-responses)
-8. [Project Status Lifecycle](#8-project-status-lifecycle)
+7. [User Dashboard](#7-user-dashboard)
+   - [Get User Dashboard](#71-get-user-dashboard)
+   - [Update Dashboard Insight](#72-update-dashboard-insight)
+   - [Reset Dashboard Insight](#73-reset-dashboard-insight)
+8. [Error Responses](#8-error-responses)
+9. [Project Status Lifecycle](#9-project-status-lifecycle)
 
 ---
 
@@ -697,6 +703,91 @@ Returns a list of all simulations/edits performed on a project, formatted as a r
 
 ---
 
+### 2.7 Get Project Report Detail
+
+Returns full simulation data for a specific report in the simulation history.
+
+- **Endpoint:** `GET /projects/:id/reports/:reportId`
+- **Auth:** Required (project owner only)
+
+#### Path Parameters
+
+| Param    | Description                  |
+|----------|------------------------------|
+| id       | Project MongoDB ID           |
+| reportId | Simulation Report MongoDB ID |
+
+#### Response `200 OK`
+
+```json
+{
+  "status": "success",
+  "message": "Report detail successfully retrieved.",
+  "data": {
+    "_id": "64bc...",
+    "scenarioName": "Optimistic Scenario",
+    "simulatedData": {
+      "capex": [...],
+      "opex": [...],
+      "tangibleBenefits": [...],
+      "intangibleBenefits": [...]
+    },
+    "simulationSettings": {
+      "inflationRate": 0.05,
+      "taxRate": 0.11,
+      "discountRate": 0.1,
+      "years": 3
+    },
+    "financialResults": {
+      "npv": 45231450.50,
+      "roi": 38.75,
+      ...
+    },
+    "pdfUrl": "https://...",
+    "calculatedAt": "2025-04-07T06:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 2.8 Upload Project Report PDF
+
+Uploads a PDF report for a specific simulation index. This will associate the PDF with that particular simulation in the history.
+
+- **Endpoint:** `POST /projects/:id/reports/:reportIndex/pdf`
+- **Auth:** Required (project owner only)
+- **Content-Type:** `multipart/form-data`
+
+#### Path Parameters
+
+| Param       | Description                                      |
+|-------------|--------------------------------------------------|
+| id          | Project MongoDB ID                               |
+| reportIndex | The 0-based index of the report in the history |
+
+#### Request Body (form fields)
+
+| Field | Type | Required | Description        |
+|-------|------|----------|--------------------|
+| pdf   | file | ✅       | PDF file (max 15MB) |
+
+#### Response `200 OK`
+
+```json
+{
+  "status": "success",
+  "message": "Report PDF uploaded successfully.",
+  "data": {
+    "reportIndex": 0,
+    "pdfUrl": "https://...",
+    "reportPdfStorageKey": "reports/..."
+  }
+}
+```
+
+---
+
 ## 3. Project Chatbot
 
 An AI chatbot scoped to a specific project. The AI is pre-seeded with project context (name, industry, scale, plan, feasibility status).
@@ -988,11 +1079,70 @@ Returns project statistics for the admin dashboard.
     "yearlyTotal": 154
   }
 }
+
+---
+
+## 7. User Dashboard
+
+Endpoints for the authenticated user's personal dashboard insights.
+
+### 7.1 Get User Dashboard
+
+Returns analytics and insights for the user's projects.
+
+- **Endpoint:** `GET /dashboard`
+- **Auth:** Required
+
+#### Response `200 OK`
+
+```json
+{
+  "status": "success",
+  "message": "Dashboard data retrieved successfully.",
+  "data": { ... }
+}
 ```
 
 ---
 
-## 7. Error Responses
+### 7.2 Update Dashboard Insight
+
+Updates the user's dashboard AI insight manually (typically triggered by frontend when needed).
+
+- **Endpoint:** `POST /dashboard/insight`
+- **Auth:** Required
+
+#### Response `200 OK`
+
+```json
+{
+  "status": "success",
+  "message": "Insight updated successfully."
+}
+```
+
+---
+
+### 7.3 Reset Dashboard Insight
+
+Resets/clears the user's dashboard insight.
+
+- **Endpoint:** `DELETE /dashboard/insight`
+- **Auth:** Required
+
+#### Response `200 OK`
+
+```json
+{
+  "status": "success",
+  "message": "Insight reset successfully."
+}
+```
+```
+
+---
+
+## 8. Error Responses
 
 All errors follow a consistent format.
 
@@ -1027,7 +1177,7 @@ or (for auth endpoints):
 
 ---
 
-## 8. Project Status Lifecycle
+## 9. Project Status Lifecycle
 
 A project moves through the following statuses:
 
@@ -1052,4 +1202,4 @@ POST /projects
 
 ---
 
-*Last updated: April 2025 — InvesTECHy Backend v1.0*
+*Last updated: April 2026 — InvesTECHy Backend v1.1*

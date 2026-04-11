@@ -1,9 +1,7 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import {setServers} from "node:dns/promises";
 import User from "../src/models/User.js";
 
-setServers(["1.1.1.1","8.8.8.8"]);
 dotenv.config();
 
 const [nama, email, password] = process.argv.slice(2);
@@ -14,7 +12,9 @@ if (!nama || !email || !password) {
 }
 
 try {
-  await mongoose.connect(process.env.MONGO_URI);
+  await mongoose.connect(process.env.MONGO_URI?.trim(), {
+    serverSelectionTimeoutMS: 10000,
+  });
 
   const existing = await User.findOne({ email });
   if (existing) {
@@ -23,7 +23,7 @@ try {
   }
 
   const admin = await User.create({
-    nama,
+    name: nama,
     email,
     password,
     role: "admin",

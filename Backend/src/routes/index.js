@@ -11,6 +11,7 @@ import {
   updateDraftProject,
   getProjectReports,
   uploadProjectReportPdf,
+  getProjectReportDetail,
   chatWithBot,
   getProjectChatHistory,
   sendProjectChatMessage,
@@ -78,6 +79,7 @@ router.get("/projects", authentication, getProjects);
 router.post("/projects", authentication, authorizeRoles("user"), createProject);
 router.get("/projects/:id", authentication, getProjectDraft);
 router.get("/projects/:id/reports", authentication, protectProject, getProjectReports);
+router.get("/projects/:id/reports/:reportId", authentication, protectProject, getProjectReportDetail);
 router.post("/projects/:id/reports/:reportIndex/pdf", authentication, protectProject, reportPdfUpload.single("pdf"), uploadProjectReportPdf);
 router.put("/projects/:id", authentication, protectProject, updateDraftProject);
 router.delete("/projects/:id", authentication, protectProject, deleteProject);

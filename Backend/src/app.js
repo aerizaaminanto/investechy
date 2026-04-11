@@ -5,17 +5,13 @@ import passport from "./config/passport.js";
 import routes from "./routes/index.js";
 import path from "path";
 import { fileURLToPath } from "url";
-
-console.log("✅ Base imports loaded");
-console.log("✅ Routes imported:", typeof routes);
-import "./services/index.js";
+import connectDatabase from "./services/db.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
-console.log("✅ All imports loaded successfully");
+console.log("Base imports loaded");
+console.log("Routes imported:", typeof routes);
+console.log("All imports loaded successfully");
 
-// =======================
-// 🔧 CONFIG
-// =======================
 dotenv.config();
 
 const app = express();
@@ -23,9 +19,6 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// =======================
-// 🌐 GLOBAL MIDDLEWARE
-// =======================
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
@@ -43,9 +36,8 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Izinkan request tanpa origin (Postman, curl)
     if (!origin) return callback(null, true);
-    // Izinkan semua URL ngrok
+
     if (
       origin.endsWith(".ngrok-free.app") ||
       origin.endsWith(".ngrok-free.dev") ||
@@ -53,64 +45,61 @@ app.use(cors({
     ) {
       return callback(null, true);
     }
-    // Izinkan origin dari whitelist
+
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+
     return callback(new Error(`CORS: Origin '${origin}' tidak diizinkan`));
   },
   credentials: true,
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.static(path.join(__dirname, "..", "FE-Test")));
 
-// 🔐 Passport (WAJIB untuk Google Auth)
 app.use(passport.initialize());
 
-// 🔥 DEBUG: Log all requests
 app.use((req, res, next) => {
-  console.log(`📍 ${req.method} ${req.path}`);
+  console.log(`${req.method} ${req.path}`);
   next();
 });
 
-// =======================
-// 📦 ROUTES
-// =======================
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "API is running 🚀",
+    message: "API is running",
   });
 });
 
 app.get("/consul", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "FE-Test", "consul.html"));
+  res.sendFile(path.join(__dirname, "..", "FE-Test", "consul.html"));
 });
 
 app.get("/test", (req, res) => {
-    res.status(200).json({
-        message: "Backend is running",
-    });
+  res.status(200).json({
+    message: "Backend is running",
+  });
 });
 
-// semua route masuk sini
-console.log("🔧 Routes object:", routes);
-console.log("🔧 Router paths:", routes.stack
-  .filter(layer => layer.route)
-  .map(layer => ({ path: layer.route.path, methods: Object.keys(layer.route.methods) }))
+console.log("Routes object:", routes);
+console.log(
+  "Router paths:",
+  routes.stack
+    .filter((layer) => layer.route)
+    .map((layer) => ({
+      path: layer.route.path,
+      methods: Object.keys(layer.route.methods),
+    }))
 );
+
 app.use("/api", routes);
 
-// 🧪 TEST ROUTE
 app.get("/api/test-direct", (req, res) => {
   res.json({ success: true, message: "Direct test route works!" });
 });
 
-// =======================
-// ❌ GLOBAL ERROR HANDLER
-// =======================
 app.use(errorHandler);
 
 app.use((err, req, res, next) => {
@@ -121,9 +110,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-// =======================
-// 🚀 START SERVER
-// =======================
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDatabase();
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

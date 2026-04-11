@@ -77,6 +77,14 @@
   border: 1px solid #e2e8f0;
 }
 
+.meta-card {
+  margin-bottom: 20px;
+}
+
+.simulation-settings-card {
+  margin-top: 20px;
+}
+
 /* CARD HEADER */
 .card-header {
   display: flex;
@@ -170,6 +178,16 @@
   font-size: 13px;
   resize: vertical;
   font-family: inherit;
+}
+
+.meta-field-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.meta-field label {
+  margin-top: 0;
 }
 
 /* FOOTER */
@@ -1038,7 +1056,8 @@
 
 @media (max-width: 768px) {
   .draft-overview-grid,
-  .edit-grid {
+  .edit-grid,
+  .meta-field-grid {
     grid-template-columns: 1fr;
   }
 

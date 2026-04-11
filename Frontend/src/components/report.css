@@ -169,7 +169,7 @@
 .report-name-cell { text-align: left !important; font-weight: 500; color: #111827; }
 
 /* Status Badges - Accurate Colors */
-.roi-tag {
+.roi-tag, .ie-tag {
   background-color: #E5E7EB;
   color: #374151;
   padding: 5px 15px;
@@ -206,6 +206,20 @@
   background-color: #F9FAFB;
   border-color: #9CA3AF;
   transform: translateY(-1px);
+}
+
+.btn-detail-text {
+  background: none;
+  border: none;
+  color: #053B29;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: opacity 0.2s;
+}
+
+.btn-detail-text:hover {
+  opacity: 0.8;
 }
 
 .btn-delete-text {

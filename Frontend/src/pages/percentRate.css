@@ -1,0 +1,21 @@
+.percent-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.percent-input-wrapper input {
+  margin-top: 0 !important;
+  padding-right: 32px !important;
+  flex: 1;
+}
+
+.percent-suffix {
+  position: absolute;
+  right: 12px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}

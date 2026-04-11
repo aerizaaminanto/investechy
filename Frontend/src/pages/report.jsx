@@ -67,11 +67,13 @@ const Report = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isOrderOpen, setIsOrderOpen] = useState(false);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [isProjectOpen, setIsProjectOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
   const [sortType, setSortType] = useState("newest");
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState("");
   const [reports, setReports] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
   const { projectList, loading, error } = useSelector((state) => state.project);
 
   useEffect(() => {
@@ -81,8 +83,18 @@ const Report = () => {
     return () => clearTimeout(timer);
   }, [dispatch]);
 
+  const calculatedProjects = useMemo(() => {
+    return projectList.filter((p) => p.status === "CALCULATED");
+  }, [projectList]);
+
   useEffect(() => {
-    if (!projectList.length) {
+    if (calculatedProjects.length > 0 && !selectedProjectId) {
+      setSelectedProjectId(calculatedProjects[0]._id || calculatedProjects[0].id);
+    }
+  }, [calculatedProjects, selectedProjectId]);
+
+  useEffect(() => {
+    if (!selectedProjectId) {
       setReports([]);
       return;
     }
@@ -94,42 +106,42 @@ const Report = () => {
       setReportError("");
 
       try {
-        const reportResponses = await Promise.all(
-          projectList.map(async (project) => {
-            const projectId = project?._id || project?.id;
-            if (!projectId) return [];
-
-            try {
-              const response = await api.get(`/projects/${projectId}/reports`);
-              const reportItems = Array.isArray(response?.data) ? response.data : [];
-
-              if (reportItems.length === 0) {
-                return mapSimulationHistoryToReports(project);
-              }
-
-              return reportItems.map((reportItem, index) => ({
-                id: `${projectId}-${index}`,
-                projectId,
-                name: getProjectDisplayName(project),
-                scenarioName: reportItem?.scenarioName || "Current Scenario",
-                date: reportItem?.date || project?.updatedAt || project?.createdAt,
-                roi: Number.parseFloat(String(reportItem?.roi || "").replace(/[^\d.-]/g, "")),
-                ieScore: reportItem?.ieScore,
-                status: reportItem?.feasibilityStatus || project?.status || "Unknown",
-                pdfUrl: reportItem?.pdfUrl || "",
-              }));
-            } catch {
-              return mapSimulationHistoryToReports(project);
-            }
-          }),
-        );
+        const response = await api.get(`/projects/${selectedProjectId}/reports`);
+        
+        // Handle result dari API: { status: "success", data: [...] }
+        const reportItems = Array.isArray(response?.data) ? response.data : [];
+        const project = calculatedProjects.find(p => (p._id || p.id) === selectedProjectId);
 
         if (!isMounted) return;
 
-        setReports(reportResponses.flat());
+        if (reportItems.length === 0 && project) {
+          setReports(mapSimulationHistoryToReports(project));
+          return;
+        }
+
+        const mappedReports = reportItems.map((item, index) => ({
+          id: `${selectedProjectId}-${index}`,
+          projectId: selectedProjectId,
+          name: project ? getProjectDisplayName(project) : "Project Report",
+          scenarioName: item?.scenarioName || "Current Scenario",
+          date: item?.date || project?.updatedAt || project?.createdAt,
+          roi: Number.parseFloat(String(item?.roi || "0").replace(/[^\d.-]/g, "")),
+          ieScore: item?.ieScore,
+          status: item?.feasibilityStatus || project?.status || "Unknown",
+          pdfUrl: item?.pdfUrl || "",
+        }));
+
+        setReports(mappedReports);
       } catch (fetchError) {
         if (!isMounted) return;
-        setReportError(fetchError?.message || "Failed to load reports.");
+        
+        // Fallback ke simulation history jika API gagal
+        const project = calculatedProjects.find(p => (p._id || p.id) === selectedProjectId);
+        if (project) {
+          setReports(mapSimulationHistoryToReports(project));
+        } else {
+          setReportError(fetchError?.message || "Failed to load reports.");
+        }
       } finally {
         if (isMounted) {
           setReportLoading(false);
@@ -142,7 +154,7 @@ const Report = () => {
     return () => {
       isMounted = false;
     };
-  }, [projectList]);
+  }, [selectedProjectId, calculatedProjects]);
 
   const statusOptions = useMemo(() => {
     return [...new Set(reports.map((item) => item.status).filter(Boolean))];
@@ -174,10 +186,46 @@ const Report = () => {
         <div className="report-filters">
           <div className="custom-dropdown">
             <button
+              className={`dropdown-btn ${isProjectOpen ? "active" : ""}`}
+              onClick={() => {
+                setIsProjectOpen(!isProjectOpen);
+                setIsOrderOpen(false);
+                setIsStatusOpen(false);
+              }}
+            >
+              {calculatedProjects.find(p => (p._id || p.id) === selectedProjectId)?.projectName || "Select Project"}
+              <span className="arrow-icon-visible"></span>
+            </button>
+
+            {isProjectOpen && (
+              <div className="dropdown-content border-style dropdown-animate">
+                {calculatedProjects.length === 0 ? (
+                  <div className="menu-item disabled">No calculated projects</div>
+                ) : (
+                  calculatedProjects.map((proj) => (
+                    <div
+                      key={proj._id || proj.id}
+                      className={`menu-item ${(proj._id || proj.id) === selectedProjectId ? "selected" : ""}`}
+                      onClick={() => {
+                        setSelectedProjectId(proj._id || proj.id);
+                        setIsProjectOpen(false);
+                      }}
+                    >
+                      {getProjectDisplayName(proj)}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="custom-dropdown">
+            <button
               className={`dropdown-btn ${isOrderOpen ? "active" : ""}`}
               onClick={() => {
                 setIsOrderOpen(!isOrderOpen);
                 setIsStatusOpen(false);
+                setIsProjectOpen(false);
               }}
             >
               Order by
@@ -214,6 +262,7 @@ const Report = () => {
               onClick={() => {
                 setIsStatusOpen(!isStatusOpen);
                 setIsOrderOpen(false);
+                setIsProjectOpen(false);
               }}
             >
               {filterStatus || "Status"}
@@ -260,10 +309,10 @@ const Report = () => {
               <table className="custom-table">
                 <thead>
                   <tr>
-                    <th className="text-left">Business Name</th>
+                    <th className="text-left">Scenario</th>
                     <th>Date</th>
-                    <th>Scenario</th>
                     <th>ROI</th>
+                    <th>IE Score</th>
                     <th>Status</th>
                     <th>Action</th>
                   </tr>
@@ -276,11 +325,13 @@ const Report = () => {
                   ) : (
                     filteredReports.map((report) => (
                       <tr key={report.id} className="row-animate">
-                        <td className="report-name-cell">{report.name}</td>
+                        <td className="report-name-cell">{report.scenarioName}</td>
                         <td className="report-date-cell">{formatDate(report.date)}</td>
-                        <td>{report.scenarioName}</td>
                         <td>
                           <span className="roi-tag">{formatPercent(report.roi)}</span>
+                        </td>
+                        <td>
+                          <span className="ie-tag">{report.ieScore ?? "-"}</span>
                         </td>
                         <td>
                           <span
@@ -299,8 +350,8 @@ const Report = () => {
                             Open
                           </button>
                           <span className="v-divider">|</span>
-                          <button className="btn-delete-text" type="button">
-                            Delete
+                          <button className="btn-detail-text" type="button">
+                            Detail
                           </button>
                         </td>
                       </tr>

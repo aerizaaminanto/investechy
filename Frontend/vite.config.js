@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 const API_PROXY_TARGET =
   process.env.VITE_API_PROXY_TARGET ||
-  'https://unvicarious-camelia-porky.ngrok-free.dev';
+  'http://localhost:3000' ;
 
 // https://vite.dev/config/
 export default defineConfig({

@@ -234,7 +234,10 @@ const formatDateStr = (dateInput) => {
 
 const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find({ userId: req.user.id }, '_id industry status createdAt').sort({ createdAt: -1 });
+    const projects = await Project.find(
+      { userId: req.user.id },
+      "_id projectName industry status createdAt"
+    ).sort({ createdAt: -1 });
 
     const formattedProjects = projects.map(project => ({
       id: project._id,
@@ -409,11 +412,12 @@ const getProjectReports = async (req, res) => {
     // Mapping simulationHistory menjadi list report
     const reports = await Promise.all(project.simulationHistory.map(async (sim, index) => {
       const resolvedPdfUrl = await getObjectUrl(sim.reportPdfStorageKey || null);
+      const roiValue = Number(sim.financialResults?.roi || 0);
       return {
         reportIndex: index,
         scenarioName: sim.scenarioName,
         date: formatDateStr(sim.calculatedAt),
-        roi: `${(sim.financialResults.roi * 100).toFixed(2)}%`,
+        roi: `${roiValue.toFixed(2)}%`,
         ieScore: sim.financialResults.ieScore,
         feasibilityStatus: sim.financialResults.feasibilityStatus,
         pdfUrl: resolvedPdfUrl || "",
@@ -511,11 +515,54 @@ const uploadProjectReportPdf = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error in uploadProjectReportPdf:", error);
     return res.status(500).json({
       status: "error",
       message: "Failed to upload report PDF.",
       error: error.message,
+    });
+  }
+};
+
+const getProjectReportDetail = async (req, res) => {
+  try {
+    const { id, reportId } = req.params;
+
+    const project = await Project.findById(id);
+
+    if (!project) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Project not found.'
+      });
+    }
+
+    // Find the specific report in simulationHistory using its _id
+    const report = project.simulationHistory.id(reportId);
+
+    if (!report) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Report not found.'
+      });
+    }
+
+    // Resolve PDF URL if exists
+    const resolvedPdfUrl = await getObjectUrl(report.reportPdfStorageKey || null);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Report detail successfully retrieved.',
+      data: {
+        ...report.toObject(),
+        pdfUrl: resolvedPdfUrl || ""
+      }
+    });
+  } catch (error) {
+    console.error('Error in getProjectReportDetail:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Failed to retrieve report detail.', 
+      error: error.message 
     });
   }
 };
@@ -527,5 +574,6 @@ export {
   getProjects, 
   updateDraftProject,
   getProjectReports,
-  uploadProjectReportPdf
+  uploadProjectReportPdf,
+  getProjectReportDetail
 };

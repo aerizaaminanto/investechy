@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { register, login, createAdmin, forgotPassword, verifyOtp, resetPassword, getProfile, updateProfile } from "../controllers/index.js";
 import passport from "passport";
-import { authentication, authorizeRoles } from "../middlewares/auth.js";
+import { authentication, authorizeRoles, passwordResetAuthentication } from "../middlewares/auth.js";
 import multer from "multer";
 
 
@@ -21,7 +21,7 @@ router.post("/admins", authentication, authorizeRoles("admin"), createAdmin);
 
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOtp);
-router.post("/reset-password", authentication, resetPassword);
+router.post("/reset-password", passwordResetAuthentication, resetPassword);
 
 router.get("/profile", authentication, getProfile);
 router.put("/profile", authentication, upload.single("avatar"), updateProfile);

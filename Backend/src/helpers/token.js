@@ -1,30 +1,39 @@
 import jwt from "jsonwebtoken";
 
-// =======================
-// 🔐 GENERATE ACCESS TOKEN
-// =======================
-export const generateToken = (payload) => {
+const TOKEN_ISSUER = "your-app";
+
+const signToken = (payload, options = {}) => {
+  const { expiresIn = "1d", purpose } = options;
+
+  return jwt.sign(
+    {
+      ...payload,
+      ...(purpose ? { purpose } : {}),
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn,
+      issuer: TOKEN_ISSUER,
+    }
+  );
+};
+
+export const generateToken = (payload, options = {}) => {
   try {
-    return jwt.sign(
+    return signToken(
       {
         id: payload.id,
         email: payload.email,
         name: payload.name,
+        ...(payload.role ? { role: payload.role } : {}),
       },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1d",
-        issuer: "your-app",
-      }
+      options
     );
   } catch (error) {
     throw new Error("Error generating token");
   }
 };
 
-// =======================
-// 🔁 GENERATE REFRESH TOKEN 
-// =======================
 export const generateRefreshToken = (payload) => {
   try {
     return jwt.sign(
@@ -34,7 +43,7 @@ export const generateRefreshToken = (payload) => {
       process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
       {
         expiresIn: "7d",
-        issuer: "your-app",
+        issuer: TOKEN_ISSUER,
       }
     );
   } catch (error) {
@@ -42,20 +51,34 @@ export const generateRefreshToken = (payload) => {
   }
 };
 
-// =======================
-// 🔍 VERIFY ACCESS TOKEN
-// =======================
-export const verifyToken = (token) => {
+export const generatePasswordResetToken = (payload) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    return generateToken(payload, {
+      expiresIn: "15m",
+      purpose: "password_reset",
+    });
+  } catch (error) {
+    throw new Error("Error generating password reset token");
+  }
+};
+
+export const verifyToken = (token, options = {}) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (
+      options.requiredPurpose &&
+      decoded.purpose !== options.requiredPurpose
+    ) {
+      throw new Error("Invalid token purpose");
+    }
+
+    return decoded;
   } catch (error) {
     throw new Error("Invalid or expired token");
   }
 };
 
-// =======================
-// 🔍 VERIFY REFRESH TOKEN
-// =======================
 export const verifyRefreshToken = (token) => {
   try {
     return jwt.verify(

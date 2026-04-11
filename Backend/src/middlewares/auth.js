@@ -1,29 +1,43 @@
 import { verifyToken } from "../helpers/token.js";
 import { User } from "../models/index.js";
 
-export const authentication = async (req, res, next) => {
+const buildAuthenticationMiddleware = ({
+  requiredPurpose = null,
+  unauthorizedMessage = "You should login",
+} = {}) => async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next({ message: "You should login", status: 401 });
+      return next({ message: unauthorizedMessage, status: 401 });
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = verifyToken(token);
+    const decoded = verifyToken(
+      token,
+      requiredPurpose ? { requiredPurpose } : {}
+    );
     const user = await User.findById(decoded.userId || decoded.id);
 
     if (!user) {
-      return next({ message: "You should login", status: 401 });
+      return next({ message: unauthorizedMessage, status: 401 });
     }
 
     req.user = user;
     req.userId = user._id.toString();
+    req.auth = decoded;
     next();
   } catch (error) {
-    next({ message: "You should login", status: 401 });
+    next({ message: unauthorizedMessage, status: 401 });
   }
 };
+
+export const authentication = buildAuthenticationMiddleware();
+
+export const passwordResetAuthentication = buildAuthenticationMiddleware({
+  requiredPurpose: "password_reset",
+  unauthorizedMessage: "Invalid or expired reset token",
+});
 
 export const authorization = (req, res, next) => {
   User.findById(req.params.id)
