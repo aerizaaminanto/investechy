@@ -1,0 +1,149 @@
+.admin-container {
+  display: flex;
+  background-color: var(--page-bg);
+  min-height: 100vh;
+}
+
+.admin-content {
+  flex-grow: 1;
+  margin-left: 300px;
+  padding: 40px;
+}
+
+.settings-card {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: var(--shadow-soft);
+}
+
+.settings-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin-bottom: 10px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 16px;
+  background-color: var(--surface);
+  color: var(--text-main);
+  transition: border-color 0.3s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #053B29;
+}
+
+.notification-section {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-enable {
+  background: none;
+  border: none;
+  color: var(--text-strong);
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 32px;
+}
+
+.btn-save-settings {
+  background: #053B29;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save-settings:hover {
+  background: #042e20;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .admin-content {
+    margin-left: 0;
+    padding: 24px;
+  }
+
+  .settings-card {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-content {
+    padding: 88px 16px 24px;
+  }
+
+  .settings-card {
+    border-radius: 18px;
+    padding: 20px;
+  }
+
+  .settings-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .notification-section {
+    align-items: flex-start;
+  }
+
+  .settings-actions {
+    justify-content: stretch;
+  }
+
+  .btn-save-settings {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-group label {
+    font-size: 15px;
+  }
+
+  .form-control {
+    min-height: 46px;
+    font-size: 15px;
+  }
+}

@@ -1,0 +1,375 @@
+/* --- Global Reset & Browser Fix --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.auth-body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #FDFBFA;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* FIX: MENGHILANGKAN IKON MATA BAWAAN BROWSER (PENTING!) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  opacity: 0;
+  transform: translateX(10px) scale(0.992);
+}
+
+.auth-page-enter {
+  animation: authPageEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+body.auth-page-exit .auth-container {
+  animation: authPageExit 0.18s ease-out forwards;
+}
+
+@keyframes authPageEnter {
+  from {
+    opacity: 0;
+    transform: translateX(10px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes authPageExit {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.994);
+  }
+}
+
+/* --- Bagian Kiri: Banner --- */
+.auth-banner {
+  flex: 1;
+  background-color: #053B29;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; 
+  padding: 100px 60px; 
+  color: white;
+}
+
+.banner-content {
+  max-width: 480px;
+}
+
+.banner-logo-container {
+  display: inline-block;
+  padding: 10px;
+  margin-bottom: 40px; 
+}
+
+.banner-logo {
+  height: 60px;
+  width: auto;
+}
+
+.banner-title {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+.banner-title .highlight {
+  color: #D4AF37; /* Gold Mewah */
+  font-weight: 800;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.banner-subtitle {
+  font-size: 16px;
+  color: #A3BFB6;
+  line-height: 1.6;
+}
+
+/* --- Bagian Kanan: Form --- */
+.auth-form-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+}
+
+.form-box {
+  width: 100%;
+  max-width: 420px;
+}
+
+.form-box h2 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.form-subtext {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 40px;
+}
+
+.form-subtext a {
+  color: #10B981; 
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.auth-text-link,
+.auth-inline-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.auth-text-link {
+  color: #10B981;
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.auth-inline-link {
+  font-size: 12px;
+  color: #053B29;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.form-subtext a:hover,
+.auth-text-link:hover,
+.auth-inline-link:hover {
+  color: #053B29;
+}
+
+/* --- Input Styling --- */
+.input-group {
+  margin-bottom: 25px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4A5568;
+  margin-bottom: 8px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 14px 16px;
+  /* Tambahkan padding kanan agar teks tidak tertutup ikon */
+  padding-right: 50px; 
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  outline: none;
+  background-color: white;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #053B29;
+  box-shadow: 0 0 0 3px rgba(5, 59, 41, 0.1);
+}
+
+/* Custom Dropdown Styling */
+.input-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.dropdown-icon-img {
+  position: absolute;
+  right: 15px;
+  width: 18px;
+  pointer-events: none;
+  opacity: 0.5;
+  transition: transform 0.3s ease;
+}
+
+.input-group select:focus + .dropdown-icon-img {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* Password Icon Styling */
+.password-icon {
+  position: absolute;
+  right: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  z-index: 10; /* Pastikan berada di paling atas */
+  background: white; /* Menutup ikon bawaan jika masih muncul sedikit */
+  padding-left: 5px;
+}
+
+.password-icon img {
+  width: 22px;
+  opacity: 0.6;
+}
+
+.btn-auth-primary {
+  width: 100%;
+  padding: 16px;
+  background-color: #1D4337;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-auth-primary:disabled {
+  background-color: #7a8f88;
+  cursor: not-allowed;
+}
+
+.btn-auth-primary:hover {
+  background-color: #053B29;
+}
+
+.btn-auth-primary:disabled:hover {
+  background-color: #7a8f88;
+}
+
+.auth-feedback {
+  margin-top: -8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.auth-feedback-error {
+  color: #c53030;
+}
+
+.otp-input {
+  text-align: center;
+  letter-spacing: 0.5em;
+  font-size: 24px;
+  font-weight: 700;
+  padding-right: 16px !important;
+}
+
+.term-condition {
+  display: flex;
+  align-items: flex-start;
+  font-size: 12px;
+  color: #718096;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.term-condition input {
+  margin-top: 2px;
+  margin-right: 10px;
+  accent-color: #053B29;
+}
+
+.term-condition label strong {
+  color: #1A1A1A;
+  font-weight: 700;
+}
+
+@media (max-width: 1024px) {
+  .auth-banner {
+    padding: 72px 36px;
+  }
+
+  .auth-form-section {
+    padding: 40px 32px;
+  }
+
+  .banner-title {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column;
+  }
+
+  .auth-banner {
+    align-items: center;
+    padding: 48px 20px 28px;
+  }
+
+  .banner-content {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .banner-logo-container {
+    margin-bottom: 20px;
+  }
+
+  .banner-logo {
+    height: 52px;
+  }
+
+  .banner-title {
+    font-size: 28px;
+    margin-bottom: 14px;
+  }
+
+  .banner-subtitle {
+    font-size: 14px;
+  }
+
+  .auth-form-section {
+    padding: 24px 16px 40px;
+    align-items: flex-start;
+  }
+
+  .form-box {
+    max-width: 100%;
+  }
+
+  .form-box h2 {
+    font-size: 30px;
+  }
+}

@@ -1,0 +1,88 @@
+.table-container {
+  background: var(--surface);
+  padding: 28px;
+  border-radius: 24px;
+  margin-top: 0;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(143, 163, 255, 0.18);
+}
+
+.table-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #26264f;
+  margin-bottom: 18px;
+}
+
+.table-subtitle {
+  color: #8f95c8;
+  font-size: 13px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 14px;
+  margin-top: 10px;
+}
+
+th {
+  color: #8f95c8;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: none;
+  background: #f1f0ff;
+}
+
+thead th:first-child {
+  border-radius: 14px 0 0 14px;
+}
+
+thead th:last-child {
+  border-radius: 0 14px 14px 0;
+}
+
+td {
+  padding: 14px 15px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--text-main);
+  border-bottom: none;
+  background: transparent;
+}
+
+tr:hover td {
+  background-color: transparent;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: #12a15d;
+  background-color: #c8f0da;
+}
+
+.table-empty-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: #8f95c8;
+  font-size: 14px;
+}
+
+:root[data-theme="dark"] .table-title {
+  color: var(--text-main);
+}
+
+:root[data-theme="dark"] th {
+  background: #2b2d4f;
+  color: #c7cbff;
+}

@@ -1,0 +1,138 @@
+.footer {
+  background-color: #00381e; /* Warna latar hijau tua */
+  padding: 80px 0 30px 0;
+  /* Mengubah border menjadi putih transparan agar halus */
+  border-top: 1px solid rgba(255, 255, 255, 0.1); 
+  font-family: 'Inter', sans-serif;
+  color: #ffffff; /* Warna teks dasar */
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.footer-wrapper {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+/* --- Styling Sisi Kiri --- */
+.footer-left {
+  flex: 1;
+  min-width: 250px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.footer-logo {
+  height: 48px;
+  width: auto;
+}
+
+.brand-name {
+  color: #ffffff; /* Nama brand menjadi putih */
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.footer-description {
+  /* Putih transparan agar deskripsi tidak terlalu "menusuk" mata */
+  color: rgba(255, 255, 255, 0.8); 
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+/* --- Styling Sisi Kanan --- */
+.footer-right {
+  display: flex;
+  gap: 80px;
+  flex-wrap: wrap;
+}
+
+.column-title {
+  color: #ffffff; /* Judul kolom menjadi putih */
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 25px;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.7); /* Link default putih redup */
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #ffffff; /* Saat di-hover menjadi putih terang */
+  padding-left: 5px; /* Efek geser sedikit saat hover */
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.8); /* Teks kontak menjadi putih */
+  font-size: 14px;
+}
+
+.contact-item p {
+  margin: 0;
+}
+
+/* --- Copyright Section --- */
+.footer-bottom {
+  margin-top: 60px;
+  padding-top: 30px;
+  /* Border pemisah bawah dibuat transparan juga */
+  border-top: 1px solid rgba(255, 255, 255, 0.1); 
+  text-align: center;
+}
+
+.footer-bottom p {
+  color: rgba(255, 255, 255, 0.5); /* Copyright warna abu-abu lembut */
+  font-size: 13px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .footer-wrapper {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .footer-brand {
+    align-items: center;
+  }
+
+  .footer-right {
+    justify-content: center;
+    gap: 40px;
+  }
+
+  .contact-item {
+    justify-content: center;
+  }
+}

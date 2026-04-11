@@ -1,0 +1,148 @@
+/* Reset Dasar agar Tampilan Konsisten */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Mengatur Font Global (Disarankan menggunakan Inter) */
+/* Masukkan tautan font Inter di head HTML Anda */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Bagian Hero Utama */
+.hero-section {
+  width: 100%;
+  min-height: 100vh; /* Memenuhi tinggi layar */
+  display: flex;
+  align-items: center; /* Mengetengahkan konten secara vertikal */
+  justify-content: center; /* Mengetengahkan konten secara horizontal */
+  padding: 60px 20px;
+  /* Gradasi Latar Belakang dari Putih ke Hijau Pucat */
+  background: linear-gradient(180deg, #FFFFFF 0%, #A4B9AF 100%);
+}
+
+/* Wadah Konten di Dalam Hero */
+.hero-content {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px; /* Jarak antara teks dan gambar */
+}
+
+/* --- Gaya Bagian Teks (Kiri) --- */
+.hero-text {
+  flex: 1; /* Mengambil sisa ruang */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Elemen teks rata kiri */
+}
+
+.hero-title {
+  font-size: 64px; /* Ukuran font besar untuk judul */
+  font-weight: 800; /* Font yang sangat tebal */
+  color: #1a1a1a; /* Warna teks gelap */
+  line-height: 1.1; /* Jarak antar baris sempit */
+  margin-bottom: 24px;
+}
+
+.hero-title-green {
+  color: #1A3932; /* Warna hijau gelap untuk penekanan */
+}
+
+.hero-description {
+  font-size: 18px; /* Ukuran font deskripsi */
+  color: #555555; /* Warna teks deskripsi */
+  line-height: 1.5; /* Jarak antar baris deskripsi */
+  max-width: 480px; /* Batasi lebar deskripsi agar mudah dibaca */
+  margin-bottom: 40px;
+}
+
+/* Gaya Tombol "Get Started" */
+.get-started-btn {
+  background-color: #000000; /* Latar belakang hitam */
+  color: #FFFFFF; /* Warna teks putih */
+  padding: 16px 32px; /* Padding dalam tombol */
+  border: none;
+  border-radius: 12px; /* Sudut tombol melengkung */
+  font-size: 16px;
+  font-weight: 600; /* Font agak tebal */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+/* Efek Hover Tombol */
+.get-started-btn:hover {
+  background-color: #333333; /* Warna latar belakang sedikit berubah */
+}
+
+/* --- Gaya Bagian Ilustrasi (Kanan) --- */
+.hero-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end; /* Memosisikan gambar di kanan */
+}
+
+.hero-image {
+  max-width: 100%; /* Gambar responsif */
+  height: auto;
+}
+
+/* --- Responsivitas untuk Layar yang Lebih Kecil --- */
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Ubah tata letak menjadi kolom pada perangkat seluler */
+  .hero-content {
+    flex-direction: column;
+    text-align: center; /* Rata tengah semua teks */
+    padding-top: 40px;
+  }
+  
+  .hero-text {
+    align-items: center; /* Tombol rata tengah */
+    margin-bottom: 40px;
+  }
+  
+  .hero-title {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+  
+  .hero-description {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .hero-image-container {
+    justify-content: center; /* Gambar rata tengah */
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 36px 16px 28px;
+  }
+
+  .hero-title {
+    font-size: 30px;
+  }
+
+  .hero-description {
+    font-size: 15px;
+  }
+
+  .get-started-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

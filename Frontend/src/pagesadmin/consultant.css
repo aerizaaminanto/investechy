@@ -1,0 +1,219 @@
+.admin-page-layout {
+  display: flex;
+  background-color: var(--page-bg);
+  min-height: 100vh;
+}
+
+.admin-content-area {
+  margin-left: 300px;
+  padding: 50px;
+  flex: 1;
+}
+
+.admin-filter-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.admin-filter-select {
+  position: relative;
+}
+
+.admin-filter-select::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid var(--text-soft);
+  border-bottom: 2px solid var(--text-soft);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.admin-filter-select:focus-within::after {
+  transform: translateY(-40%) rotate(-135deg);
+}
+
+.admin-filter-select select {
+  width: 100%;
+  height: 48px;
+  padding: 12px 42px 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text-main);
+  appearance: none;
+  outline: none;
+}
+
+.top-button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 40px;
+}
+
+.add-consultant-btn {
+  background-color: var(--accent-strong);
+  color: var(--surface);
+  border: none;
+  padding: 12px 25px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.consultant-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+.consultant-item-card {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 15px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
+}
+
+.item-card-image {
+  height: 180px;
+  background-color: var(--placeholder-bg);
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+.item-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-name {
+  color: var(--text-strong);
+  font-weight: 800;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.item-role {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin: 10px 0;
+  line-height: 1.4;
+}
+
+.item-price {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.item-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-icon img { width: 22px; }
+
+:root[data-theme="dark"] .btn-icon.edit img {
+  filter: brightness(0) saturate(100%) invert(91%) sepia(18%) saturate(524%) hue-rotate(89deg) brightness(93%) contrast(91%);
+}
+
+.admin-consultant-empty-state {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 24px;
+  color: var(--text-soft);
+  text-align: center;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .admin-content-area {
+    margin-left: 0;
+    padding: 24px;
+  }
+
+  .admin-filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .consultant-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-content-area {
+    padding: 88px 16px 24px;
+  }
+
+  .top-button-container {
+    justify-content: stretch;
+    margin-bottom: 24px;
+  }
+
+  .add-consultant-btn {
+    width: 100%;
+  }
+
+  .consultant-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .consultant-item-card {
+    border-radius: 18px;
+    padding: 14px;
+  }
+
+  .item-card-image {
+    height: 160px;
+  }
+
+  .item-card-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-filter-bar {
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .admin-filter-select select {
+    height: 46px;
+    font-size: 14px;
+  }
+
+  .item-name {
+    font-size: 1rem;
+  }
+
+  .item-role {
+    font-size: 12px;
+  }
+
+  .item-price {
+    font-size: 14px;
+  }
+}

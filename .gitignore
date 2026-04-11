@@ -1,0 +1,18 @@
+# Backend
+Backend/.env
+Backend/node_modules/
+Backend/error.log
+Backend/*.log
+Backend/FE-Test/
+
+# Frontend
+Frontend/node_modules/
+Frontend/dist/
+Frontend/dist-ssr/
+Frontend/*.local
+Frontend/*.log
+
+# Common
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,220 @@
+/* Layout Dasar */
+.report-container {
+  display: flex;
+  background-color: #F8F9FA;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+.report-content {
+  margin-left: 300px;
+  padding: 40px 50px;
+  flex-grow: 1;
+  opacity: 0; /* Awalnya tidak terlihat untuk animasi */
+  transform: translateY(20px);
+}
+
+/* Page Transition Animation */
+.page-fade-in {
+  animation: pageEnter 0.6s ease-out forwards;
+}
+
+@keyframes pageEnter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.report-title {
+  color: #053B29;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+/* Filters & Dropdown */
+.report-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.custom-dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  border: 1.5px solid #D1D5DB;
+  border-radius: 12px;
+  padding: 12px 20px;
+  background-color: #FFFFFF;
+  color: #4B5563;
+  width: 220px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdown-btn:hover { border-color: #053B29; }
+
+/* Panah yang Terlihat & Berputar */
+.arrow-icon-visible {
+  width: 12px;
+  height: 8px;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-btn.active .arrow-icon-visible {
+  transform: rotate(180deg);
+}
+
+/* Animasi Muncul Menu Dropdown */
+.dropdown-content {
+  position: absolute;
+  top: 55px;
+  left: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  z-index: 100;
+  min-width: 200px;
+  padding: 8px 0;
+  border: 1px solid #E5E7EB;
+}
+
+.dropdown-animate {
+  animation: slideDownFade 0.2s ease-out;
+  transform-origin: top;
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: scaleY(0.95); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+.menu-item {
+  padding: 10px 15px 10px 40px;
+  font-size: 14px;
+  cursor: pointer;
+  position: relative;
+  color: #374151;
+  transition: background 0.2s;
+}
+
+.menu-item:hover { background-color: #F3F4F6; }
+
+.menu-item.selected::before {
+  content: "●";
+  position: absolute;
+  left: 15px;
+  color: #053B29;
+  font-size: 10px;
+}
+
+/* Card & Table */
+.report-card {
+  background: #FFFFFF;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.card-subtitle {
+  color: #2D2D5E;
+  font-size: 20px;
+  margin-bottom: 25px;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.custom-table th {
+  padding: 15px;
+  background-color: #F1F4F9;
+  color: #8A92A6;
+  font-weight: 500;
+  font-size: 13px;
+  text-align: center;
+}
+
+.custom-table td {
+  padding: 20px 15px;
+  border-bottom: 1px solid #F1F4F9;
+  font-size: 14px;
+  text-align: center;
+  color: #4B5563;
+}
+
+/* Animasi Baris Tabel */
+.row-animate {
+  animation: rowEnter 0.4s ease-out backwards;
+}
+
+@keyframes rowEnter {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.text-left { text-align: left !important; }
+.report-name-cell { text-align: left !important; font-weight: 500; color: #111827; }
+
+/* Status Badges - Accurate Colors */
+.roi-tag {
+  background-color: #E5E7EB;
+  color: #374151;
+  padding: 5px 15px;
+  border-radius: 15px;
+  font-size: 12px;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 115px;
+  display: inline-block;
+}
+
+.recommended { background-color: #D1FAE5; color: #065F46; }
+.not-recommended { background-color: #FEE2E2; color: #991B1B; }
+.error { background-color: #B91C1C; color: #FFFFFF; }
+
+/* Action Buttons */
+.btn-open {
+  background: none;
+  border: 1px solid #D1D5DB;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+.btn-open:hover {
+  background-color: #F9FAFB;
+  border-color: #9CA3AF;
+  transform: translateY(-1px);
+}
+
+.btn-delete-text {
+  background: none;
+  border: none;
+  color: #EF4444;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.v-divider { color: #E5E7EB; margin: 0 8px; }

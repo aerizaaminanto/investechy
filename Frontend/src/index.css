@@ -1,0 +1,74 @@
+/* index.css */
+html {
+  /* Membuat transisi scroll halus secara native di browser */
+  scroll-behavior: smooth;
+}
+
+:root {
+  --app-bg: #ffffff;
+  --page-bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --surface-soft: #f8fafc;
+  --text-main: #1a202c;
+  --text-soft: #718096;
+  --text-strong: #053b29;
+  --border-color: #e2e8f0;
+  --sidebar-bg: #053b29;
+  --sidebar-text: #ffffff;
+  --sidebar-hover: rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 8px 18px rgba(15, 23, 42, 0.06);
+  --accent-strong: #053b29;
+  --accent-soft: #dcfce7;
+  --accent-text: #166534;
+  --danger-strong: #c80000;
+  --danger-soft: #fee2e2;
+  --placeholder-bg: #e2e8f0;
+}
+
+:root[data-theme="dark"] {
+  --app-bg: #0f172a;
+  --page-bg: #111827;
+  --surface: #1f2937;
+  --surface-muted: #0f172a;
+  --surface-soft: #111827;
+  --text-main: #f8fafc;
+  --text-soft: #94a3b8;
+  --text-strong: #d1fae5;
+  --border-color: #334155;
+  --sidebar-bg: #020617;
+  --sidebar-text: #e2e8f0;
+  --sidebar-hover: rgba(148, 163, 184, 0.12);
+  --shadow-soft: 0 8px 18px rgba(2, 6, 23, 0.35);
+  --accent-strong: #86efac;
+  --accent-soft: rgba(134, 239, 172, 0.18);
+  --accent-text: #d1fae5;
+  --danger-strong: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.16);
+  --placeholder-bg: #334155;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--text-main);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Navbar container agar sejajar dengan konten */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 10%; 
+}
+
+html {
+  scroll-behavior: smooth;
+}

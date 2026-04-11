@@ -1,0 +1,92 @@
+/* Reset & Base Styles */
+.investechy-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 20px;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Header Section */
+.investechy-header {
+  text-align: center;
+  margin-bottom: 100px;
+}
+
+.investechy-header h1 {
+  font-size: 42px;
+  color: #1a3a32; /* Hijau Tua */
+  font-weight: 800;
+  margin-bottom: 25px;
+  letter-spacing: -0.5px;
+}
+
+.investechy-header p {
+  max-width: 850px;
+  margin: 0 auto;
+  font-size: 18px;
+  color: #4a4a4a;
+}
+
+/* Subtitle "Why InvesTechy?" */
+.main-subtitle {
+  text-align: center;
+  font-size: 36px;
+  color: #1a3a32;
+  font-weight: 700;
+  margin-bottom: 60px;
+}
+
+/* Grid Layout */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Membagi 2 kolom */
+  gap: 50px 80px; /* Jarak antar item */
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* Icon Styling */
+.icon-circle {
+  background-color: #d4b483; /* Warna Emas/Krem */
+  width: 55px;
+  height: 55px;
+  min-width: 55px; /* Mencegah icon menciut */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+}
+
+/* Text Styling */
+.text-content h3 {
+  font-size: 22px;
+  color: #1a3a32;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+.text-content p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+  text-align: justify;
+}
+
+/* Responsif untuk Tablet & HP */
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr; /* Jadi 1 kolom di layar kecil */
+    gap: 40px;
+  }
+
+  .investechy-header h1 {
+    font-size: 32px;
+  }
+}
