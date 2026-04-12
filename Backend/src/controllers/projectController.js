@@ -1,5 +1,5 @@
 import { Project, Quadrant } from '../models/index.js'
-import { generateProjectDraft, determineMcFarlanQuadrant, calculateProjectValue } from '../services/index.js'
+import { generateProjectDraft, determineMcFarlanQuadrant, calculateProjectValue, generateProjectReportPDF } from '../services/index.js'
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "../services/b2Connect.js";
 import { getObjectUrl } from "../helpers/s3Helper.js";
@@ -380,6 +380,36 @@ const updateDraftProject = async (req, res) => {
     // Simulation history is capped at 10 items via the return error above.
 
     await project.save();
+
+    // Trigger PDF Generation
+    const reportIndex = project.simulationHistory.length - 1;
+    const savedEntry = project.simulationHistory[reportIndex];
+    try {
+        const bucket = getStorageBucket();
+        if (bucket) {
+            const pdfData = {
+                ...savedEntry.toObject(),
+                project: project.toObject()
+            };
+            const pdfBuffer = await generateProjectReportPDF(pdfData);
+            const safeName = sanitizeFileName(`${project.projectName}-Report-${reportIndex + 1}.pdf`);
+            const reportPdfStorageKey = `reports/${project._id}/simulation-${reportIndex + 1}-${Date.now()}-${safeName}`;
+            
+            await s3Client.send(new PutObjectCommand({
+                Bucket: bucket,
+                Key: reportPdfStorageKey,
+                Body: pdfBuffer,
+                ContentType: "application/pdf"
+            }));
+
+            // Update with PDF key and save again
+            savedEntry.reportPdfStorageKey = reportPdfStorageKey;
+            savedEntry.reportPdfFileName = safeName;
+            await project.save();
+        }
+    } catch (pdfErr) {
+        console.error('Error generating or uploading PDF:', pdfErr);
+    }
 
     res.status(200).json({
       status: 'success',
