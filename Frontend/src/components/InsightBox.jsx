@@ -15,13 +15,6 @@ export default function InsightBox({ note }) {
         </p>
       </div>
 
-      {hasNote ? (
-        <div className="badge-container">
-          <button type="button" className="badge-insight">
-            Save
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }

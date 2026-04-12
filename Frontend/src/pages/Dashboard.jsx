@@ -219,8 +219,8 @@ export default function Dashboard() {
     () =>
       (dashboardData.statistics?.ieScoreAndRoiComparison?.data || []).map((item) => ({
         label: item.simulationName,
-        ie: item.roiScore,
-        roi: item.ieScore,
+        ie: item.ieScore,
+        roi: item.roiScore,
       })),
     [dashboardData],
   );
@@ -298,15 +298,25 @@ export default function Dashboard() {
                 title="IE Score Projection"
                 compact
               />
-              <InsightBox note={dashboardData.insightNote} />
               <div className="table-section dashboard-table-section">
                 <AnalyticsTable data={dashboardData.topProjects || []} />
               </div>
             </div>
             <div className="dashboard-feature-side">
+              <InsightBox note={dashboardData.insightNote} />
               <div className="comparison-card">
                 <span className="comparison-subtitle">Statistics</span>
                 <h3>IE Score And ROI Comparison</h3>
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', fontSize: '13px', color: '#5b5b7d' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '12px', height: '12px', background: '#e0ba68', borderRadius: '3px' }}></span>
+                    <span>ROI</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '12px', height: '12px', background: '#29574d', borderRadius: '3px' }}></span>
+                    <span>IE Score</span>
+                  </div>
+                </div>
                 <select className="comparison-select" value={comparisonOptions} readOnly>
                   <option>{comparisonOptions}</option>
                 </select>
@@ -318,8 +328,16 @@ export default function Dashboard() {
                     {comparisonData.map((item) => (
                       <div key={item.label} className="comparison-group">
                         <div className="comparison-bars">
-                          <div className="comparison-bar gold" style={{ height: `${item.ie}%` }} />
-                          <div className="comparison-bar green" style={{ height: `${item.roi}%` }} />
+                          <div
+                            className="comparison-bar gold"
+                            style={{ height: `${Math.min(Number(item.roi) || 0, 100)}%` }}
+                            title={`ROI: ${item.roi}`}
+                          />
+                          <div
+                            className="comparison-bar green"
+                            style={{ height: `${Math.min(Number(item.ie) || 0, 100)}%` }}
+                            title={`IE Score: ${item.ie}`}
+                          />
                         </div>
                         <span>{item.label}</span>
                       </div>
