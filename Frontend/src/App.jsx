@@ -17,6 +17,7 @@ import Consult from "./pages/Consult";
 import Settings from "./pages/Settings";
 import Report from './pages/report'; 
 import ReportSummary from "./pages/ReportSummary";
+import ReportDetail from "./pages/ReportDetail";
 import { getStoredUser } from "./services/api";
 
 // --- IMPORT COMPONENT BARU UNTUK ADMIN ---
@@ -49,6 +50,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/report-list" element={<Report />} />
           <Route path="/report-list/:id" element={<ReportSummary />} />
+          <Route path="/report-detail/:projectId/:reportId" element={<ReportDetail />} />
           <Route path="/new-project" element={<NewProject />} />
           <Route path="/new-project/survey" element={<Survey />} />
           <Route path="/project-list" element={<ProjectList />} />

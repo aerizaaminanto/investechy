@@ -414,6 +414,7 @@ const getProjectReports = async (req, res) => {
       const resolvedPdfUrl = await getObjectUrl(sim.reportPdfStorageKey || null);
       const roiValue = Number(sim.financialResults?.roi || 0);
       return {
+        _id: sim._id,
         reportIndex: index,
         scenarioName: sim.scenarioName,
         date: formatDateStr(sim.calculatedAt),

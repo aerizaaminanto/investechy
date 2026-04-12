@@ -120,7 +120,7 @@ const Report = () => {
         }
 
         const mappedReports = reportItems.map((item, index) => ({
-          id: `${selectedProjectId}-${index}`,
+          id: item?._id || item?.id || `${selectedProjectId}-${index}`,
           projectId: selectedProjectId,
           name: project ? getProjectDisplayName(project) : "Project Report",
           scenarioName: item?.scenarioName || "Current Scenario",
@@ -350,7 +350,11 @@ const Report = () => {
                             Open
                           </button>
                           <span className="v-divider">|</span>
-                          <button className="btn-detail-text" type="button">
+                          <button
+                            className="btn-detail-text"
+                            type="button"
+                            onClick={() => navigate(`/report-detail/${report.projectId}/${report.id}`)}
+                          >
                             Detail
                           </button>
                         </td>
