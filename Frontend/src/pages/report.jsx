@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { FaDownload } from "react-icons/fa";
 import Sidebar from "../components/sidebar";
 import { fetchProjects } from "../store/projectThunk";
 import api from "../services/api";
@@ -345,9 +346,16 @@ const Report = () => {
                         <td className="action-cell">
                           <button
                             className="btn-open"
-                            onClick={() => navigate(`/report-list/${report.projectId}`)}
+                            onClick={() => {
+                              if (report.pdfUrl) {
+                                window.open(report.pdfUrl, "_blank");
+                              } else {
+                                alert("PDF laporan belum tersedia.");
+                              }
+                            }}
                           >
-                            Open
+                            <FaDownload style={{ marginRight: '8px' }} />
+                            Download
                           </button>
                           <span className="v-divider">|</span>
                           <button
