@@ -103,8 +103,18 @@ const validateConsultantPayload = (payload, { isUpdate = false } = {}) => {
   }
 
   if (!isUpdate || whatsapp !== undefined) {
-    if (typeof whatsapp !== "string" || !/^https:\/\/wa\.me\/\d+$/.test(whatsapp)) {
-      errors.push("Field 'whatsapp' wajib berupa link wa.me yang valid, contoh: https://wa.me/6281234567890.");
+    if (typeof whatsapp !== "string" || !whatsapp.trim()) {
+      errors.push("Field 'whatsapp' wajib diisi.");
+    } else {
+      const isWaLink = /^https:\/\/wa\.me\/\d+$/.test(whatsapp);
+      const digitsOnly = whatsapp.replace(/[^\d]/g, "");
+      const hasEnoughDigits = digitsOnly.length >= 9;
+
+      if (!isWaLink && !hasEnoughDigits) {
+        errors.push(
+          "Field 'whatsapp' wajib berupa nomor telepon atau link wa.me yang valid."
+        );
+      }
     }
   }
 
@@ -141,7 +151,17 @@ const sanitizeConsultantPayload = async (payload, existingConsultant = null, { a
   nama: payload.nama?.trim() ?? existingConsultant?.nama,
   spesialisasi:
     payload.spesialisasi?.map((item) => item.trim()) ?? existingConsultant?.spesialisasi,
-  whatsapp: payload.whatsapp?.trim() ?? existingConsultant?.whatsapp,
+  whatsapp: (() => {
+    let ws = payload.whatsapp?.trim() ?? existingConsultant?.whatsapp;
+    if (ws && !ws.startsWith("https://wa.me/")) {
+      let digits = ws.replace(/[^\d]/g, "");
+      if (digits.startsWith("0")) {
+        digits = "62" + digits.slice(1);
+      }
+      return `https://wa.me/${digits}`;
+    }
+    return ws;
+  })(),
   email: payload.email?.trim() ?? existingConsultant?.email,
   fee:
     payload.fee !== undefined && payload.fee !== null && payload.fee !== ""
