@@ -17,12 +17,6 @@ export default function Consult() {
     dispatch(fetchConsultants());
   }, [dispatch]);
 
-  const goToDetail = (consultantId) => {
-    document.body.classList.add("page-exit");
-    setTimeout(() => {
-      navigate("/consult-detail", { state: { consultantId } });
-    }, 300);
-  };
 
   const getConsultantPhoto = (consultant) =>
     consultant?.photo ||
@@ -119,12 +113,19 @@ export default function Consult() {
                     {formatConsultantPrice(item)}
                   </p>
 
-                  <button
+                  <a
+                    href={item.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="btn-consult"
-                    onClick={() => goToDetail(item.id)}
+                    style={{
+                      display: "block",
+                      textAlign: "center",
+                      textDecoration: "none",
+                    }}
                   >
                     Consult Now
-                  </button>
+                  </a>
                 </div>
               </div>
             ))}
