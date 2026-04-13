@@ -243,13 +243,11 @@ const Survey = () => {
 
     const payload = buildProjectPayload();
     const isConfirmed = await popup.confirm({
-      title: { id: "Kirim Analisis", en: "Submit Analysis" },
-      message: {
-        id: "Apakah Anda yakin ingin mengirim analisis ini?",
-        en: "Are you sure you want to submit this analysis?",
-      },
-      confirmText: { id: "Kirim Sekarang", en: "Submit Now" },
-      cancelText: { id: "Periksa Lagi", en: "Review Again" },
+      title: "Submit Analysis",
+      message: "Are you sure you want to submit this analysis?",
+      confirmText: "Submit Now",
+      cancelText: "Review Again",
+      tone: "success",
     });
 
     if (isConfirmed) {
@@ -263,11 +261,8 @@ const Survey = () => {
         }
         sessionStorage.removeItem("temp_project_base");
         popup.notify({
-          title: { id: "Analisis Dikirim", en: "Analysis Submitted" },
-          message: {
-            id: "Project baru berhasil dibuat dan masuk ke daftar project.",
-            en: "The new project was created successfully and added to the project list.",
-          },
+          title: "Analysis Submitted",
+          message: "The new project was created successfully and added to the project list.",
         });
         navigate("/project-list");
       }

@@ -88,6 +88,7 @@ export function PopupProvider({ children }) {
       setDialog({
         ...options,
         kind: "confirm",
+        tone: options.tone || "danger",
         confirmText: options.confirmText || resolveLocalizedText({ id: "Lanjutkan", en: "Continue" }, language),
         cancelText: options.cancelText || resolveLocalizedText({ id: "Batal", en: "Cancel" }, language),
       });
@@ -148,7 +149,7 @@ export function PopupProvider({ children }) {
                 ) : null}
                 <button
                   type="button"
-                  className={`popup-btn ${dialog.kind === "confirm" ? "popup-btn-danger" : "popup-btn-primary"}`}
+                  className={`popup-btn ${dialog.kind === "confirm" && dialog.tone === "danger" ? "popup-btn-danger" : "popup-btn-primary"}`}
                   onClick={() => closeDialog(true)}
                 >
                   {dialog.confirmText}
