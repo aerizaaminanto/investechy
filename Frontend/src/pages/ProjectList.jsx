@@ -199,14 +199,16 @@ export default function ProjectList() {
                       >
                         View Detail
                       </button>
-                      <button
-                        className="btn-delete-project"
-                        type="button"
-                        onClick={() => handleDeleteProject(item)}
-                        disabled={deletingId === projectId}
-                      >
-                        {deletingId === projectId ? "Deleting..." : "Delete"}
-                      </button>
+                      {item.status === "ERROR" && (
+                        <button
+                          className="btn-delete-project"
+                          type="button"
+                          onClick={() => handleDeleteProject(item)}
+                          disabled={deletingId === projectId}
+                        >
+                          {deletingId === projectId ? "Deleting..." : "Delete"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
