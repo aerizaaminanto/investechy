@@ -11,6 +11,51 @@ import { usePopup } from "../components/PopupProvider";
 import "./editData.css";
 import "./percentRate.css";
 
+const toNumberValue = (value) => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  const normalizedValue = String(value || "").replace(/[^\d.-]/g, "");
+  const parsedValue = Number(normalizedValue);
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(Number.isNaN(Number(value)) ? 0 : Number(value));
+
+const formatCurrencyText = (value) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(Number.isNaN(Number(value)) ? 0 : Number(value));
+
+const formatShortNumber = (value) => {
+  const amount = Number(value);
+  if (Number.isNaN(amount)) return "-";
+  return new Intl.NumberFormat("id-ID", {
+    maximumFractionDigits: 2,
+  }).format(Number.isNaN(amount) ? 0 : amount);
+};
+
+const sanitizeDecimalInput = (value) => {
+  const normalizedValue = String(value || "").replace(/,/g, ".");
+  const sanitizedValue = normalizedValue.replace(/[^\d.]/g, "");
+  const [wholePart = "", ...decimalParts] = sanitizedValue.split(".");
+
+  if (decimalParts.length === 0) {
+    return wholePart;
+  }
+
+  return `${wholePart}.${decimalParts.join("")}`;
+};
+
+
 const SECTION_NAMES = ["CAPEX", "OPEX", "Tangible Results", "Intangible Results"];
 
 const createRow = () => ({
@@ -178,50 +223,6 @@ const buildSimulationForm = (draft) => {
   };
 };
 
-const formatCurrency = (value) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(Number(value) || 0);
-
-const toNumberValue = (value) => {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : 0;
-  }
-
-  const normalizedValue = String(value || "").replace(/[^\d.-]/g, "");
-  const parsedValue = Number(normalizedValue);
-  return Number.isFinite(parsedValue) ? parsedValue : 0;
-};
-
-const formatCurrencyText = (value) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(Number(value) || 0);
-
-const formatShortNumber = (value) => {
-  const amount = Number(value);
-  if (Number.isNaN(amount)) return "-";
-  return new Intl.NumberFormat("id-ID", {
-    maximumFractionDigits: 2,
-  }).format(amount);
-};
-
-const sanitizeDecimalInput = (value) => {
-  const normalizedValue = String(value || "").replace(/,/g, ".");
-  const sanitizedValue = normalizedValue.replace(/[^\d.]/g, "");
-  const [wholePart = "", ...decimalParts] = sanitizedValue.split(".");
-
-  if (decimalParts.length === 0) {
-    return wholePart;
-  }
-
-  return `${wholePart}.${decimalParts.join("")}`;
-};
-
 const getNumericValue = (value) => {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
   if (typeof value === "string") return toNumberValue(value);
@@ -267,8 +268,9 @@ const normalizeBreakEvenRows = (rows = []) =>
   Array.isArray(rows)
     ? rows.map((row) => ({
         year: row?.year,
-        netCashFlow: row?.netCashFlow ?? row?.net ?? row?.cashFlow ?? 0,
+        netCashFlow: row?.yearlyNet ?? row?.netCashFlow ?? row?.net ?? row?.cashFlow ?? 0,
         cumulativeCashFlow:
+          row?.cumulativeNet ??
           row?.cumulativeCashFlow ??
           row?.cumulativeNetCashFlow ??
           ((Number(row?.cumulativeBenefit) || 0) - (Number(row?.cumulativeCost) || 0)) ??
@@ -322,6 +324,7 @@ const buildHistoryPreview = (text) => {
   if (cleaned.length <= 68) return cleaned;
   return `${cleaned.slice(0, 68).trim()}...`;
 };
+
 
 const formatHistoryDate = (value) => {
   const date = new Date(value);

@@ -15,7 +15,8 @@ const calculateROI = (initialCost, yearlyBenefits, yearlyCosts) => {
   if (totalCost === 0) return 0;
   
   const roi = ((totalBenefit - totalCost) / totalCost) * 100;
-  return Number(roi.toFixed(2));
+  const result = Number(roi.toFixed(2));
+  return isNaN(result) ? 0 : result;
 };
 
 /**
@@ -31,7 +32,8 @@ const calculateNPV = (initialCost, yearlyBenefits, yearlyCosts, discountRate) =>
     npv += presentValue;
   }
   
-  return Number(npv.toFixed(2));
+  const result = Number(npv.toFixed(2));
+  return isNaN(result) ? 0 : result;
 };
 
 /**
@@ -53,7 +55,8 @@ const calculatePaybackPeriod = (initialCost, yearlyBenefits, yearlyCosts) => {
       if (netCashFlow === 0) return Number(i.toFixed(2));
       
       const fraction = Math.abs(previousCumulative) / netCashFlow;
-      return Number((i + fraction).toFixed(2));
+      const result = Number((i + fraction).toFixed(2));
+      return isNaN(result) ? i : result;
     }
   }
   
@@ -89,7 +92,9 @@ const calculateBreakEvenPoint = (initialCost, yearlyBenefits, yearlyCosts) => {
       benefit: currentBenefit,
       cumulativeCost: cumulativeCost,
       cumulativeBenefit: cumulativeBenefit,
-      net: cumulativeBenefit - cumulativeCost
+      yearlyNet: currentBenefit - currentCost,
+      cumulativeNet: cumulativeBenefit - cumulativeCost,
+      net: cumulativeBenefit - cumulativeCost // Keep for backward compatibility
     });
   }
 
@@ -105,15 +110,17 @@ const calculateInformationEconomics = (roiPercentage, surveyScores, quadrantFact
   // 1. Convert ROI Percentage to ROI Score (0 to 5)
   // ROI percentage from parameter is e.g. 15.5 for 15.5%
   let roiScore = 0;
-  if (isNaN(roiPercentage) || !isFinite(roiPercentage) || roiPercentage < 1) {
+  const safeRoi = isNaN(roiPercentage) ? 0 : roiPercentage;
+
+  if (safeRoi < 1) {
     roiScore = 0;
-  } else if (roiPercentage <= 299) {
+  } else if (safeRoi <= 299) {
     roiScore = 1;
-  } else if (roiPercentage <= 499) {
+  } else if (safeRoi <= 499) {
     roiScore = 2;
-  } else if (roiPercentage <= 699) {
+  } else if (safeRoi <= 699) {
     roiScore = 3;
-  } else if (roiPercentage <= 899) {
+  } else if (safeRoi <= 899) {
     roiScore = 4;
   } else {
     roiScore = 5;
@@ -140,11 +147,12 @@ const calculateInformationEconomics = (roiPercentage, surveyScores, quadrantFact
   const tuWeighted = (tDomainScores.TU || 0) * (tDomainFactors.TU || 0);
   const irWeighted = (tDomainScores.IR || 0) * (tDomainFactors.IR || 0);
 
-  const ieScore = roiWeighted + 
-                  smWeighted + caWeighted + miWeighted + crWeighted + orWeighted + 
-                  saWeighted + duWeighted + tuWeighted + irWeighted;
+  const ieScoreRaw = (roiWeighted || 0) + 
+                  (smWeighted || 0) + (caWeighted || 0) + (miWeighted || 0) + (crWeighted || 0) + (orWeighted || 0) + 
+                  (saWeighted || 0) + (duWeighted || 0) + (tuWeighted || 0) + (irWeighted || 0);
 
-  const finalScore = Number(ieScore.toFixed(2));
+  const finalScore = Number(ieScoreRaw.toFixed(2));
+  const ieScore = isNaN(finalScore) ? 0 : finalScore;
 
   let feasibilityStatus = "";
   if (finalScore <= -20) feasibilityStatus = "Highly Infeasible";
