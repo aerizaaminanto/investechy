@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProjects } from "../store/projectThunk";
 import { getToken } from "../services/api";
+import { useAppSettings } from "../context/AppSettingsContext";
 import "./projectStatusNotifier.css";
 
 const POLL_INTERVAL_MS = 30000;
@@ -10,6 +11,7 @@ const getProjectDisplayName = (project) => project?.projectName?.trim() || "Unti
 
 export default function ProjectStatusNotifier() {
   const dispatch = useDispatch();
+  const { t } = useAppSettings();
   const { projectList } = useSelector((state) => state.project);
   const [notifications, setNotifications] = useState([]);
   const previousStatusesRef = useRef({});
@@ -48,8 +50,8 @@ export default function ProjectStatusNotifier() {
           ...prev,
           {
             id: notificationId,
-            title: "Project Update",
-            message: `${projectName} is waiting for user input.`,
+            title: t("projectUpdate"),
+            message: t("isWaitingInput").replace("{projectName}", projectName),
           },
         ]);
 

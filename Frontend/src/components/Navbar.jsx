@@ -1,10 +1,10 @@
-import { useState } from "react";
-import "./navbar.css";
 import logo from "../assets/InvesTechy.jpg";
 import { Link } from "react-router-dom";
+import { useAppSettings } from "../context/AppSettingsContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useAppSettings();
 
   const scrollToSection = (event, sectionId) => {
     event.preventDefault();
@@ -35,27 +35,27 @@ const Navbar = () => {
         <ul className="nav-links">
           <li>
             <a href="#about-us" onClick={(event) => scrollToSection(event, "about-us")}>
-              About Us
+              {t("aboutUs")}
             </a>
           </li>
 
           <li>
             <a href="#contact" onClick={(event) => scrollToSection(event, "contact")}>
-              Contact
+              {t("contact")}
             </a>
           </li>
         </ul>
 
         <div className="nav-actions">
           <Link to="/login" className="login-btn" onClick={() => setIsMenuOpen(false)}>
-            Login
+            {t("login")}
           </Link>
           <Link
             to="/register"
             className="register-btn"
             onClick={() => setIsMenuOpen(false)}
           >
-            Register
+            {t("register")}
           </Link>
         </div>
       </div>

@@ -145,7 +145,7 @@ const Sidebar = ({ activeMenu }) => {
               alt="Logout"
               className="sidebar-icon-img"
             />
-            <span className="menu-text">Log Out</span>
+            <span className="menu-text">{t("logout")}</span>
           </div>
         </div>
       </aside>

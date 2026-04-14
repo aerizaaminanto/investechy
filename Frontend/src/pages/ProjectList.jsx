@@ -3,10 +3,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar";
 import { usePopup } from "../components/PopupProvider";
+import { useAppSettings } from "../context/AppSettingsContext";
 import { deleteProject, fetchProjects } from "../store/projectThunk";
 import "./projectList.css";
 
-const normalizeStatus = (status = "") => status.replaceAll("_", " ");
+const normalizeStatus = (status = "", t) => {
+  const normalized = status.replaceAll("_", " ");
+  if (status === "CALCULATED") return t("calculated");
+  if (status === "WAITING_USER_INPUT") return t("waitingInput");
+  if (status === "DRAFTING") return t("drafting");
+  return normalized;
+};
 const getProjectId = (project) => project?._id || project?.id || "";
 
 const getProjectDisplayName = (project) => {
@@ -14,13 +21,13 @@ const getProjectDisplayName = (project) => {
   return name || "Untitled Project";
 };
 
-const formatProjectDate = (value) => {
+const formatProjectDate = (value, language = "id") => {
   if (!value) return "-";
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
 
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat(language === "id" ? "id-ID" : "en-US", {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -32,6 +39,7 @@ export default function ProjectList() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const popup = usePopup();
+  const { t, settings } = useAppSettings();
   const [animate, setAnimate] = useState(false);
   const [deletingId, setDeletingId] = useState("");
   const { projectList, loading, error } = useSelector((state) => state.project);
@@ -76,13 +84,13 @@ export default function ProjectList() {
     if (!projectId) return;
 
     const isConfirmed = await popup.confirm({
-      title: { id: "Hapus Project", en: "Delete Project" },
+      title: { id: "Hapus Project", en: t("delete") + " Project" },
       message: {
         id: `Project "${projectName}" akan dihapus dari daftar. Aksi ini tidak bisa dibatalkan.`,
         en: `Project "${projectName}" will be removed from the list. This action cannot be undone.`,
       },
-      confirmText: { id: "Ya, hapus", en: "Yes, delete" },
-      cancelText: { id: "Kembali", en: "Go Back" },
+      confirmText: { id: "Ya, hapus", en: t("delete") },
+      cancelText: { id: "Kembali", en: t("back") },
       tone: "danger",
     });
     if (!isConfirmed) return;
@@ -117,34 +125,34 @@ export default function ProjectList() {
       <main className={`main-content ${animate ? "page-enter" : ""}`}>
         <div className="header">
           <div>
-            <h1>Projects Portfolio</h1>
-            <p>Manage and simulate your IT investment projects</p>
+            <h1>{t("projectsPortfolio")}</h1>
+            <p>{t("projectsPortfolioSub")}</p>
           </div>
         </div>
 
         <div className="stats-grid">
           <div className="stat-card">
-            <p>Total Projects</p>
+            <p>{t("totalProjects")}</p>
             <h2>{stats.total}</h2>
           </div>
           <div className="stat-card">
-            <p>Calculated</p>
+            <p>{t("calculated")}</p>
             <h2>{stats.calculated}</h2>
           </div>
           <div className="stat-card">
-            <p>Waiting Input</p>
+            <p>{t("waitingInput")}</p>
             <h2>{stats.waiting}</h2>
           </div>
           <div className="stat-card">
-            <p>Drafting</p>
+            <p>{t("drafting")}</p>
             <h2>{stats.drafting}</h2>
           </div>
         </div>
 
         <div className="project-header">
-          <h2>Recent Projects</h2>
+          <h2>{t("recentProjects")}</h2>
           <button className="btn-primary" onClick={() => navigate("/new-project")}>
-            + New Project
+            + {t("newProject")}
           </button>
         </div>
 
@@ -157,11 +165,11 @@ export default function ProjectList() {
               <div className="project-card">
                 <div className="card-top">
                   <div>
-                    <p className="label">Project</p>
-                    <h3>No projects yet</h3>
+                    <p className="label">{t("projectName")}</p>
+                    <h3>{t("noProjects")}</h3>
                   </div>
                 </div>
-                <div className="tag">Start by creating your first analysis</div>
+                <div className="tag">{t("startCreating")}</div>
               </div>
             ) : (
               sortedProjects.map((item) => {
@@ -171,7 +179,7 @@ export default function ProjectList() {
                 <div className="project-card" key={projectId}>
                   <div className="card-top">
                     <div>
-                      <p className="label">Project Name</p>
+                      <p className="label">{t("projectName")}</p>
                       <h3>{getProjectDisplayName(item)}</h3>
                     </div>
 
@@ -180,7 +188,7 @@ export default function ProjectList() {
                         .toLowerCase()
                         .replaceAll("_", "-")}`}
                     >
-                      {normalizeStatus(item.status)}
+                      {normalizeStatus(item.status, t)}
                     </span>
                   </div>
 
@@ -188,8 +196,8 @@ export default function ProjectList() {
 
                   <div className="card-footer">
                     <div>
-                      <p className="label">Created At</p>
-                      <h4>{formatProjectDate(item.createdAt || item.updatedAt)}</h4>
+                      <p className="label">{t("createdAt")}</p>
+                      <h4>{formatProjectDate(item.createdAt || item.updatedAt, settings.language)}</h4>
                     </div>
 
                     <div className="card-actions">
@@ -197,7 +205,7 @@ export default function ProjectList() {
                         className="btn-detail"
                         onClick={() => navigate(`/edit-data/${projectId}`)}
                       >
-                        View Detail
+                        {t("viewDetail")}
                       </button>
                       {item.status === "ERROR" && (
                         <button
@@ -206,7 +214,7 @@ export default function ProjectList() {
                           onClick={() => handleDeleteProject(item)}
                           disabled={deletingId === projectId}
                         >
-                          {deletingId === projectId ? "Deleting..." : "Delete"}
+                          {deletingId === projectId ? t("deleting") : t("delete")}
                         </button>
                       )}
                     </div>

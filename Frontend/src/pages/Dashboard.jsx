@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaChartLine, FaCoins, FaMoneyBillWave, FaSearch } from "react-icons/fa";
+import { FaChartLine, FaCoins, FaMoneyBillWave } from "react-icons/fa";
 import { LuBadgeDollarSign } from "react-icons/lu";
 import Sidebar from "../components/sidebar";
 import SummaryCard from "../components/SummaryCard";
@@ -234,21 +234,11 @@ export default function Dashboard() {
           <header className="top-bar dashboard-topbar">
             <div className="welcome-message">
               <h1>{`${t("dashboardGreeting")}, ${displayName}`}</h1>
-              <p>Welcome back, We miss you coming</p>
+              <p>{t("welcomeMissYou")}</p>
             </div>
 
             <div className="top-bar-right">
-              <label className="search-wrapper dashboard-search" htmlFor="dashboard-search-input">
-                <span className="search-icon-wrap" aria-hidden="true">
-                  <FaSearch className="search-icon" />
-                </span>
-                <input
-                  id="dashboard-search-input"
-                  type="text"
-                  placeholder={t("dashboardSearch")}
-                  aria-label={t("dashboardSearch")}
-                />
-              </label>
+
 
               <div className="profile-info">
                 <Link
@@ -268,22 +258,22 @@ export default function Dashboard() {
 
           <div className="summary-grid dashboard-card-grid">
             <SummaryCard
-              title="Total Investment"
+              title={t("totalInvestment")}
               value={formatCurrency(dashboardData.overviewCards?.totalInvestmentCapex)}
               icon={<FaMoneyBillWave />}
             />
             <SummaryCard
-              title="Total Project"
+              title={t("totalProjects")}
               value={String(dashboardData.overviewCards?.totalProject ?? 0)}
               icon={<FaChartLine />}
             />
             <SummaryCard
-              title="Waiting Input Data Project"
+              title={t("waitingInput")}
               value={String(dashboardData.overviewCards?.waitingInputDataProject ?? 0)}
               icon={<FaCoins />}
             />
             <SummaryCard
-              title="Calculated Project Value"
+              title={t("calculated")}
               value={String(dashboardData.overviewCards?.calculatedProjectValue ?? 0)}
               icon={<LuBadgeDollarSign />}
             />
@@ -294,8 +284,8 @@ export default function Dashboard() {
               <ChartSection
                 data={statisticsData}
                 type="user"
-                subtitle="Statistics"
-                title="IE Score Projection"
+                subtitle={t("statistics")}
+                title={t("ieScoreProjection")}
                 compact
               />
               <div className="table-section dashboard-table-section">
@@ -305,16 +295,16 @@ export default function Dashboard() {
             <div className="dashboard-feature-side">
               <InsightBox note={dashboardData.insightNote} />
               <div className="comparison-card">
-                <span className="comparison-subtitle">Statistics</span>
-                <h3>IE Score And ROI Comparison</h3>
+                <span className="comparison-subtitle">{t("statistics")}</span>
+                <h3>{t("ieScoreAndRoiComparison")}</h3>
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', fontSize: '13px', color: '#5b5b7d' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ width: '12px', height: '12px', background: '#e0ba68', borderRadius: '3px' }}></span>
-                    <span>ROI</span>
+                    <span>{t("roi")}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ width: '12px', height: '12px', background: '#29574d', borderRadius: '3px' }}></span>
-                    <span>IE Score</span>
+                    <span>{t("ieScore")}</span>
                   </div>
                 </div>
                 <select className="comparison-select" value={comparisonOptions} readOnly>
@@ -322,7 +312,7 @@ export default function Dashboard() {
                 </select>
 
                 {comparisonData.length === 0 ? (
-                  <div className="comparison-empty-card">No comparison data yet.</div>
+                  <div className="comparison-empty-card">{t("noComparisonData")}</div>
                 ) : (
                   <div className="comparison-chart">
                     {comparisonData.map((item) => (

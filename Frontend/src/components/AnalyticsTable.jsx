@@ -1,3 +1,4 @@
+import { useAppSettings } from "../context/AppSettingsContext";
 import "./table.css";
 
 const formatCurrency = (value) =>
@@ -8,27 +9,29 @@ const formatCurrency = (value) =>
   }).format(Number(value) || 0);
 
 export default function AnalyticsTable({ data = [] }) {
+  const { t } = useAppSettings();
+
   return (
     <div className="table-container">
       <div className="table-head">
-        <span className="table-subtitle">Top Project</span>
-        <h3 className="table-title">Top Project</h3>
+        <span className="table-subtitle">{t("topProject")}</span>
+        <h3 className="table-title">{t("topProject")}</h3>
       </div>
 
       {data.length === 0 ? (
         <div className="table-empty-state">
-          <p>No top project data yet.</p>
+          <p>{t("noTopProject")}</p>
         </div>
       ) : (
         <table>
           <thead>
             <tr>
-              <th>Project Name</th>
-              <th>Simulation Name</th>
-              <th>Investment</th>
-              <th>ROI</th>
-              <th>IE Score</th>
-              <th>Status</th>
+              <th>{t("projectName")}</th>
+              <th>{t("scenarioNameLabel")}</th>
+              <th>{t("investment")}</th>
+              <th>{t("roi")}</th>
+              <th>{t("ieScore")}</th>
+              <th>{t("status")}</th>
             </tr>
           </thead>
 

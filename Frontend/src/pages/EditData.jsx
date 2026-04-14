@@ -8,6 +8,7 @@ import html2canvas from "html2canvas";
 import api from "../services/api";
 import invesTechyLogo from "../assets/InvesTechy.jpg";
 import { usePopup } from "../components/PopupProvider";
+import { useAppSettings } from "../context/AppSettingsContext";
 import "./editData.css";
 import "./percentRate.css";
 
@@ -326,10 +327,10 @@ const buildHistoryPreview = (text) => {
 };
 
 
-const formatHistoryDate = (value) => {
+const formatHistoryDate = (value, language = "id") => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat(language === "id" ? "id-ID" : "en-US", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -371,6 +372,7 @@ export default function EditData() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const popup = usePopup();
+  const { t, settings } = useAppSettings();
   const pdfExportRef = useRef(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
@@ -432,8 +434,7 @@ export default function EditData() {
               {
                 id: "assistant-welcome",
                 role: "assistant",
-                content:
-                  "Halo, saya AI Helpy. Ada yang ingin ditanyakan tentang proyek ini?",
+                content: t("aiHelpyGreeting"),
               },
             ],
       );
@@ -464,8 +465,8 @@ export default function EditData() {
       const backendError = error?.data?.message || error?.message || "";
       setChatError(
         /fetch failed/i.test(backendError)
-          ? "Koneksi ke AI Helpy belum tersedia."
-          : backendError || "Chat history belum berhasil dimuat.",
+          ? t("aiHelpyConnectionError")
+          : backendError || t("aiHelpyLoading") + " " + t("error"),
       );
     } finally {
       setChatLoading(false);
@@ -597,7 +598,7 @@ export default function EditData() {
     simulationForm.scenarioName?.trim() ||
     latestSimulation?.scenarioName ||
     currentDraft?.scenarioName ||
-    "Current Scenario";
+    t("scenarioNameLabel");
   const previewSimulationSettings = useMemo(
     () => ({
       inflationRate: toNumberValue(simulationForm.inflationRate || 5) / 100,
@@ -695,10 +696,10 @@ export default function EditData() {
   const handleSave = () => {
     if (filledRows.length === 0) {
       popup.alert({
-        title: { id: "Data Belum Lengkap", en: "Incomplete Data" },
+        title: { id: "Data Belum Lengkap", en: t("incompleteData") },
         message: {
           id: "Isi minimal satu data dulu sebelum menyimpan.",
-          en: "Please fill in at least one item before saving.",
+          en: t("fillAtLeastOne"),
         },
         tone: "danger",
       });
@@ -856,7 +857,7 @@ export default function EditData() {
     await dispatch(fetchProjects());
     setShowResultCard(false);
     popup.notify({
-      title: { id: "Project Tersimpan", en: "Project Saved" },
+      title: { id: "Project Tersimpan", en: t("readyForReport") },
       message: {
         id: "Perubahan sudah disimpan dan siap dilihat di Report List.",
         en: "Your changes have been saved and are ready to view in Report List.",
@@ -932,8 +933,8 @@ export default function EditData() {
       const backendError = error?.data?.message || error?.message || "";
       setChatError(
         /fetch failed/i.test(backendError)
-          ? "Koneksi ke AI Helpy belum tersedia."
-          : backendError || "Pesan belum berhasil dikirim ke backend.",
+          ? t("aiHelpyConnectionError")
+          : backendError || t("aiHelpySendError"),
       );
     } finally {
       setChatSending(false);
@@ -947,15 +948,15 @@ export default function EditData() {
       <main className={`main-content ${isChatOpen ? "shrink" : ""}`}>
         <div className="header">
           <div>
-            <h1>Edit Data</h1>
+            <h1>{t("editDataTitle")}</h1>
             <p>
-              Edit hasil generate AI untuk {currentDraft?.projectName || "project ini"}, lalu simpan perubahan
-              sesuai kebutuhanmu.
+              {t("editDataSubtitle")}{" "}
+              {currentDraft?.projectName ? `(${currentDraft.projectName})` : ""}
             </p>
           </div>
         </div>
 
-        {loading && <p>Loading project draft...</p>}
+        {loading && <p>{t("loadingDraft")}</p>}
         {error && <p className="edit-data-error">{error}</p>}
 
         {!loading && (
@@ -975,10 +976,10 @@ export default function EditData() {
               <strong>{currentDraft?.mcfarlan?.quadrant || "-"}</strong>
             </div>
             <div className="draft-overview-card">
-              <span>Expires At</span>
+              <span>{t("expiresAt")}</span>
               <strong>
                 {currentDraft?.expiresAt
-                  ? new Intl.DateTimeFormat("id-ID", {
+                  ? new Intl.DateTimeFormat(settings.language === "id" ? "id-ID" : "en-US", {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",
@@ -992,16 +993,16 @@ export default function EditData() {
         <div className="input-card meta-card">
           <div className="card-header">
             <div>
-              <h3>Scenario Name</h3>
-              <p className="card-subtitle">Gunakan nama skenario yang paling sesuai untuk simulasi ini.</p>
+              <h3>{t("scenarioNameLabel")}</h3>
+              <p className="card-subtitle">{t("scenarioDescription")}</p>
             </div>
           </div>
 
           <div className="input-group">
-            <label>Scenario Name</label>
+            <label>{t("scenarioNameLabel")}</label>
             <input
               type="text"
-              placeholder="Contoh: Optimistic Scenario"
+              placeholder={t("scenarioPlaceholder")}
               value={simulationForm.scenarioName}
               onChange={(event) => handleSimulationFieldChange("scenarioName", event.target.value)}
             />
@@ -1014,10 +1015,10 @@ export default function EditData() {
               <div className="card-header">
                 <div>
                   <h3>{section.title}</h3>
-                  <p className="card-subtitle">Tambahkan item yang benar-benar ingin dihitung.</p>
+                  <p className="card-subtitle">{t("simulationSettingsSub")}</p>
                 </div>
                 <button type="button" className="add-row-btn" onClick={() => handleAddRow(section.id)}>
-                  Add Item
+                  {t("addItem")}
                 </button>
               </div>
 
@@ -1025,38 +1026,38 @@ export default function EditData() {
                 {section.rows.map((row, index) => (
                   <div className="section-row" key={row.id}>
                     <div className="row-head">
-                      <span>{section.title} Item {index + 1}</span>
+                      <span>{section.title} {t("itemLabel")} {index + 1}</span>
                       <button
                         type="button"
                         className="delete-row-btn"
                         onClick={() => handleDeleteRow(section.id, row.id)}
                       >
-                        Remove
+                        {t("removeItem")}
                       </button>
                     </div>
 
                     <div className="input-group">
-                      <label>Item</label>
+                      <label>{t("itemLabel")}</label>
                       <input
                         type="text"
-                        placeholder={`Contoh ${section.title} item`}
+                        placeholder={`${t("itemPlaceholder")} ${section.title}`}
                         value={row.item}
                         onChange={(event) => handleFieldChange(section.id, row.id, "item", event.target.value)}
                       />
 
-                      <label>Description</label>
+                      <label>{t("descriptionLabel")}</label>
                       <textarea
                         rows="3"
-                        placeholder="Tambahkan deskripsi item"
+                        placeholder={t("descriptionPlaceholder")}
                         value={row.description}
                         onChange={(event) => handleFieldChange(section.id, row.id, "description", event.target.value)}
                       />
 
-                      <label>Nominal</label>
+                      <label>{t("nominalLabel")}</label>
                       <input
                         type="number"
                         inputMode="numeric"
-                        placeholder="Masukkan nominal"
+                        placeholder={t("nominalPlaceholder")}
                         value={row.nominal}
                         onChange={(event) => handleFieldChange(section.id, row.id, "nominal", event.target.value)}
                       />
@@ -1071,14 +1072,14 @@ export default function EditData() {
         <div className="input-card meta-card simulation-settings-card">
           <div className="card-header">
             <div>
-              <h3>Simulation Settings</h3>
-              <p className="card-subtitle">Masukkan nilai rate dalam format persen, misalnya 5 berarti 5%.</p>
+              <h3>{t("simulationSettings")}</h3>
+              <p className="card-subtitle">{t("simulationSettingsSub")}</p>
             </div>
           </div>
 
           <div className="meta-field-grid">
             <div className="input-group meta-field">
-              <label>Inflation Rate</label>
+              <label>{t("inflationRate")}</label>
               <div className="percent-input-wrapper">
                 <input
                   type="text"
@@ -1092,7 +1093,7 @@ export default function EditData() {
             </div>
 
             <div className="input-group meta-field">
-              <label>Tax Rate</label>
+              <label>{t("taxRate")}</label>
               <div className="percent-input-wrapper">
                 <input
                   type="text"
@@ -1106,7 +1107,7 @@ export default function EditData() {
             </div>
 
             <div className="input-group meta-field">
-              <label>Discount Rate</label>
+              <label>{t("discountRate")}</label>
               <div className="percent-input-wrapper">
                 <input
                   type="text"
@@ -1120,7 +1121,7 @@ export default function EditData() {
             </div>
 
             <div className="input-group meta-field">
-              <label>Years Expected</label>
+              <label>{t("yearsExpected")}</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -1134,10 +1135,9 @@ export default function EditData() {
         </>
         )}
 
-        {!loading && (
         <div className="footer-actions">
           <button className="btn-save" onClick={handleSave}>
-            Save Changes
+            {t("saveChanges")}
           </button>
 
           <div className="ai-trigger" onClick={() => setIsChatOpen(true)}>
@@ -1145,7 +1145,6 @@ export default function EditData() {
             <span>AI Helpy</span>
           </div>
         </div>
-        )}
       </main>
 
     <div className={`ai-chat ${isChatOpen ? "open" : ""}`}>
@@ -1160,7 +1159,7 @@ export default function EditData() {
           </div>
           <div className="chat-header-actions">
             <button type="button" className="chat-refresh-btn" onClick={loadChatHistory} disabled={chatLoading}>
-              {chatLoading ? "..." : "Refresh"}
+              {chatLoading ? "..." : t("refresh")}
             </button>
             <button
               type="button"
@@ -1177,10 +1176,10 @@ export default function EditData() {
 
         <div className="chat-body">
           <div className="chat-history-panel">
-            <div className="chat-history-title">Chat history</div>
+            <div className="chat-history-title">{t("chatHistory")}</div>
             <div className="chat-history-list">
               {chatHistoryEntries.length === 0 ? (
-                <p className="chat-state">Belum ada riwayat yang tersimpan.</p>
+                <p className="chat-state">{t("aiHelpyEmptyHistory")}</p>
               ) : (
                 chatHistoryEntries.map((entry) => (
                   <div
@@ -1197,21 +1196,21 @@ export default function EditData() {
                       <strong>{entry.preview}</strong>
                       <span>{entry.projectName}</span>
                     </div>
-                    <time>{formatHistoryDate(entry.updatedAt)}</time>
+                    <time>{formatHistoryDate(entry.updatedAt, settings.language)}</time>
                   </div>
                 ))
               )}
             </div>
           </div>
 
-          <div className="chat-conversation-head">Current conversation</div>
-          {chatLoading ? <p className="chat-state">Loading chat history...</p> : null}
+          <div className="chat-conversation-head">{t("currentConversation")}</div>
+          {chatLoading ? <p className="chat-state">{t("aiHelpyLoading")}</p> : null}
           {!chatLoading && chatMessages.length === 0 ? (
-            <p className="chat-state">Belum ada chat history. Coba mulai pertanyaan baru.</p>
+            <p className="chat-state">{t("aiHelpyEmptyChat")}</p>
           ) : null}
           {chatMessages.map((message) => (
             <div key={message.id} className={`chat-message ${message.role}`}>
-              <span className="chat-role">{message.role === "user" ? "You" : "AI Helpy"}</span>
+              <span className="chat-role">{message.role === "user" ? t("you") : "AI Helpy"}</span>
               <p>{cleanChatMessage(message.content)}</p>
             </div>
           ))}
@@ -1221,13 +1220,13 @@ export default function EditData() {
         <form className="chat-footer" onSubmit={handleSendChat}>
           <input
             type="text"
-            placeholder="Ask anything you need..."
+            placeholder={t("askAnything")}
             value={chatInput}
             onChange={(event) => setChatInput(event.target.value)}
             disabled={chatSending}
           />
           <button type="submit" className="chat-send-btn" disabled={chatSending || !chatInput.trim()}>
-            {chatSending ? "Sending..." : "Send"}
+            {chatSending ? t("sending") : t("send")}
           </button>
         </form>
       </div>
@@ -1354,7 +1353,7 @@ export default function EditData() {
                       ))}
                     </tbody>
                   </table>
-                  {capexRows.length > 6 ? <p className="pdf-note">+ {capexRows.length - 6} item lain tetap dihitung di total.</p> : null}
+                  {capexRows.length > 6 ? <p className="pdf-note">+ {capexRows.length - 6} {t("otherItemsIncluded")}.</p> : null}
                   <div className="pdf-total-row">
                     <span>Total CAPEX</span>
                     <strong>{formatCurrencyText(summary.capex)}</strong>
@@ -1381,7 +1380,7 @@ export default function EditData() {
                       ))}
                     </tbody>
                   </table>
-                  {opexRows.length > 6 ? <p className="pdf-note">+ {opexRows.length - 6} item lain tetap dihitung di total.</p> : null}
+                  {opexRows.length > 6 ? <p className="pdf-note">+ {opexRows.length - 6} {t("otherItemsIncluded")}.</p> : null}
                   <div className="pdf-total-row">
                     <span>Total OPEX</span>
                     <strong>{formatCurrencyText(summary.opex)}</strong>
@@ -1481,8 +1480,10 @@ export default function EditData() {
                     <h3>Conclusion</h3>
                     <p>
                       {String(exportFeasibility).toLowerCase().includes("need")
-                        ? "Project masih perlu penyesuaian tambahan sebelum implementasi penuh."
-                        : `Project menunjukkan hasil yang baik dengan ROI ${formatShortNumber(financialResults?.roi || 0)}% dan payback period ${formatShortNumber(financialResults?.paybackPeriod || 0)} tahun.`}
+                        ? t("needsAdjustment")
+                        : t("goodResults")
+                            .replace("{roi}", formatShortNumber(financialResults?.roi || 0))
+                            .replace("{payback}", formatShortNumber(financialResults?.paybackPeriod || 0))}
                     </p>
                   </div>
                 </div>
@@ -1495,9 +1496,9 @@ export default function EditData() {
       {showResultCard && (
         <div className="result-overlay" onClick={() => setShowResultCard(false)}>
           <div className="result-card" onClick={(event) => event.stopPropagation()}>
-            <span className="result-badge">{summary.status}</span>
-            <h2>Result Summary</h2>
-            <p>Hasil ini langsung dihitung dari data yang baru saja kamu isi di halaman edit.</p>
+            <span className="result-badge">{summary.status === "Ready For Report" ? t("readyForReport") : t("needReview")}</span>
+            <h2>{t("resultsSummary")}</h2>
+            <p>{t("resultsSummarySub")}</p>
 
             <div className="result-grid">
               <div className="result-item">
@@ -1537,13 +1538,13 @@ export default function EditData() {
                 className="btn-result secondary"
                 onClick={() => setShowResultCard(false)}
               >
-                Back
+                {t("back")}
               </button>
               <button type="button" className="btn-result muted" onClick={handleSaveProject}>
-                {loading ? "Saving..." : "Save Project"}
+                {loading ? t("saving") : t("saveProject")}
               </button>
               <button type="button" className="btn-result primary" onClick={handleExportPdf}>
-                Export PDF
+                {t("exportPdf")}
               </button>
             </div>
           </div>
