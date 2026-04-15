@@ -1,5 +1,0 @@
-Gagal mengekstrak data dari AI atau format tidak sesuai. Silakan coba lagi. Chatbot API request failed.
-Error: Gagal mengekstrak data dari AI atau format tidak sesuai. Silakan coba lagi. Chatbot API request failed.
-    at Module.generateProjectDraft (file:///C:/Users/Muhammad%20Wijaya/Documents/Belajar/Kada/capstone/FullStack/investechy/Backend/src/services/llmService.js:404:11)
-    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
-    at async [eval]:1:133
