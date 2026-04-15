@@ -1,6 +1,8 @@
+import { useState } from "react";
 import logo from "../assets/InvesTechy.jpg";
 import { Link } from "react-router-dom";
 import { useAppSettings } from "../context/AppSettingsContext";
+import "./navbar.css";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
